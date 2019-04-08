@@ -1,13 +1,19 @@
 #ifndef MYOPENGLWIDGET_H
 #define MYOPENGLWIDGET_H
 
-#include <QObject>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
 
-class MyOpenGLWidget : public QObject
+class MyOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
-    explicit MyOpenGLWidget(QObject *parent = nullptr);
+    explicit MyOpenGLWidget(QWidget *parent = nullptr);
+
+protected:
+    void initializeGL();
+    void paintGL();
+    void resizeGL(int width, int height);
 
 signals:
 
