@@ -14,12 +14,15 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+    void resizeEvent(QResizeEvent *event);
     ~MainWindow();
 public slots:
     void readFrontImage();
+
 private:
     Ui::MainWindow *ui;
     ProcessPicture *pp;
+    bool read_picture;
 };
 
 #endif // MAINWINDOW_H

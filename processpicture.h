@@ -16,6 +16,7 @@ public:
     void ReadPicture(QString path);
     QImage ReturnImage();
     void FindBoundary();
+    bool ReturnFlag();
 signals:
 
 public slots:
@@ -25,6 +26,7 @@ private:
    Mat gray;
    Mat edge;
    Mat result;
+   bool find_flag;
 };
 
 #endif // PROCESSPICTURE_H
