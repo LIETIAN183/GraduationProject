@@ -17,16 +17,21 @@ public:
     QImage ReturnImage();
     void FindBoundary();
     bool ReturnFlag();
+    vector<Point> ReturnBoundary();
+    QImage drawbounBoundary(vector<Point> points);
+    int width();
+    int height();
 signals:
 
 public slots:
 private:
-   Mat image;
-   Mat back;
-   Mat gray;
-   Mat edge;
-   Mat result;
-   bool find_flag;
+    Mat image;
+    Mat back;
+    Mat gray;
+    Mat edge;
+    Mat result;
+    vector<Point> boundary;
+    bool find_flag;
 };
 
 #endif // PROCESSPICTURE_H

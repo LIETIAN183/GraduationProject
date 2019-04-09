@@ -3,8 +3,9 @@
 
 #include "processpicture.h"
 #include <QMainWindow>
-
-namespace Ui {
+#include "myscene.h"
+namespace Ui
+{
 class MainWindow;
 }
 
@@ -16,6 +17,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     void resizeEvent(QResizeEvent *event);
     ~MainWindow();
+    // static
 public slots:
     void readFrontImage();
 
@@ -23,6 +25,7 @@ private:
     Ui::MainWindow *ui;
     ProcessPicture *pp;
     bool read_picture;
+    MyScene *scene;
 };
 
 #endif // MAINWINDOW_H

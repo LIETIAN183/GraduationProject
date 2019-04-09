@@ -111,21 +111,54 @@ void ProcessPicture::FindBoundary()
     vector<vector<Point>> approxPoint(contours.size());
     //获取控制点
     approxPolyDP(contours[0], approxPoint[0], 10, true);
+    //赋值到boundary数组
+    boundary.assign(approxPoint[0].begin(), approxPoint[0].end());
     cout << approxPoint[0].size() << endl;
-
-    drawContours(image, contours, -1, Scalar::all(255), 10);
+    //画边缘
+    /*
+    drawContours(image, contours, -1, Scalar::all(255), 5);
+    //画控制点
     for(vector<Point>::iterator i = approxPoint[0].begin(); i != approxPoint[0].end(); i++)
     {
         cout << i->x << ',' << i->y << endl;
         circle(image, *i, 10, Scalar(0, 0, 255), -1);
     }
-
-    imshow("x", image);
+    */
+    //imshow("x", image);
 }
 
 bool ProcessPicture::ReturnFlag()
 {
     return find_flag;
+}
+
+vector<Point> ProcessPicture::ReturnBoundary()
+{
+    return boundary;
+}
+
+QImage ProcessPicture::drawbounBoundary(vector<Point> points)
+{
+    image = back.clone();
+    //画边缘
+    drawContours(image, points, -1, Scalar::all(255), 10);
+    //画控制点
+    for(vector<Point>::iterator i = points.begin(); i != points.end(); i++)
+    {
+        cout << i->x << ',' << i->y << endl;
+        circle(image, *i, 10, Scalar(0, 0, 255), -1);
+    }
+    return ReturnImage();
+}
+
+int ProcessPicture::width()
+{
+    return image.cols;
+}
+
+int ProcessPicture::height()
+{
+    return image.rows;
 }
 /*
 vector<Point> ProcessPicture::FindBiggestContour(Mat binary_image)

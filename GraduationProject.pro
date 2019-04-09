@@ -32,19 +32,24 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     myopenglwidget.cpp \
-    processpicture.cpp
+    processpicture.cpp \
+    myscene.cpp \
+    mypixitem.cpp \
+    mycircleitem.cpp
 
 HEADERS += \
         mainwindow.h \
     myopenglwidget.h \
-    processpicture.h
+    processpicture.h \
+    myscene.h \
+    mypixitem.h \
+    mycircleitem.h
 
 FORMS += \
         mainwindow.ui \
 
 CONFIG += mobility
 MOBILITY = 
-
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
