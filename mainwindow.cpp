@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <QMessageBox>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -9,10 +10,13 @@ MainWindow::MainWindow(QWidget *parent) :
     this->ui->setupUi(this);
     setWindowState(Qt::WindowMaximized);
     this->pp = new ProcessPicture();
-    read_picture = false;
+    this->scene = new MyScene();
+    this->model = new DataModel();
     //点击按钮读取图片
     connect(ui->ac_Front_View, SIGNAL(triggered()), this, SLOT(readFrontImage()));
-    //this->ui->graphicsView->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    connect(this->scene, SIGNAL(Modified()), this, SLOT(freshPic()));
+    connect(this->ui->ac_Flat_Model, SIGNAL(triggered()), this, SLOT(flatModel()));
+    this->ui->openGLWidget->TestFunction(1);
 }
 
 MainWindow::~MainWindow()
@@ -28,38 +32,28 @@ void MainWindow::readFrontImage()
     QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), desktop_path, tr("Images (*.png *.jpg)"));
     if(filename.isEmpty())
     {
-        //QMessageBox::warning(this,"Warning","READ PICTURE FAILING");
+        QMessageBox::warning(this, "Warning", "READ PICTURE FAILING");
         return;
     }
     pp->ReadPicture(filename);
     pp->FindBoundary();
-    //if(pp->ReturnFlag())
-    //{
     QImage img = pp->ReturnImage();
     QPixmap pix = QPixmap::fromImage(img.scaled(ui->graphicsView->size(), Qt::KeepAspectRatio));
-    //ui->label->setPixmap(pix);
-    //图片缩放--待探索
-    //ui->label->setScaledContents(true);
-    //read_picture = true;
-    //}
-    //int width = pix.width();
-    //int height = pix.height();
     vector<Point> temp = this->pp->ReturnBoundary();
-    this->scene = new MyScene(pix, temp, pp->width(), pp->height());
-    //this->scene->setSceneRect(-width / 2, -height / 2, width, height);
+    this->scene->SetScene(pix, temp, pp->width(), pp->height());
     this->ui->graphicsView->setScene(scene);
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event)
+void MainWindow::freshPic()
 {
-    Q_UNUSED(event);
-    //问题：图片无法缩小，待完善
-    /*
-    if(read_picture)
-    {
-        ui->label->clear();
-        QImage img = pp->ReturnImage();
-        ui->label->setPixmap(QPixmap::fromImage(img.scaled(ui->label->size(), Qt::KeepAspectRatio)));
-    }
-    */
+    vector<Point> temp = this->scene->returnResult();
+    QImage tmp = this->pp->drawBoundary(temp);
+    QPixmap pix = QPixmap::fromImage(tmp.scaled(ui->graphicsView->size(), Qt::KeepAspectRatio));
+    this->scene->ChangePic(pix);
+    model->SaveBoundary(temp);
+}
+
+void MainWindow::flatModel()
+{
+
 }

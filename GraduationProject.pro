@@ -35,7 +35,8 @@ SOURCES += \
     processpicture.cpp \
     myscene.cpp \
     mypixitem.cpp \
-    mycircleitem.cpp
+    mycircleitem.cpp \
+    datamodel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -43,13 +44,16 @@ HEADERS += \
     processpicture.h \
     myscene.h \
     mypixitem.h \
-    mycircleitem.h
+    mycircleitem.h \
+    datamodel.h
 
 FORMS += \
         mainwindow.ui \
 
 CONFIG += mobility
 MOBILITY = 
+
+LIBS += -lz
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

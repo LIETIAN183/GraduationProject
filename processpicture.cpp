@@ -90,17 +90,12 @@ void ProcessPicture::FindBoundary()
     //方法3
     //adaptiveThreshold(gray,gray,255,ADAPTIVE_THRESH_GAUSSIAN_C,THRESH_BINARY,3,1);
     //medianBlur(gray,gray,3);
-
-    //---连接边缘，填充轮廓
-    //--
-
-    //----------------END--------------
-
-    //-----------------获得边界点--------
+    //-----------------获得轮廓--------
     vector<vector<Point>> contours;//存储轮廓点
     vector<Vec4i> hierarchy;//存储不同轮廓间的信息
 
     findContours(gray, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+    //判断是否只得到一条轮廓
     if(hierarchy.size() != 1)
     {
         //cout << hierarchy.size() << endl;
@@ -113,18 +108,11 @@ void ProcessPicture::FindBoundary()
     approxPolyDP(contours[0], approxPoint[0], 10, true);
     //赋值到boundary数组
     boundary.assign(approxPoint[0].begin(), approxPoint[0].end());
+    //Wait to delete
     cout << approxPoint[0].size() << endl;
+    //-------
     //画边缘
-    /*
-    drawContours(image, contours, -1, Scalar::all(255), 5);
-    //画控制点
-    for(vector<Point>::iterator i = approxPoint[0].begin(); i != approxPoint[0].end(); i++)
-    {
-        cout << i->x << ',' << i->y << endl;
-        circle(image, *i, 10, Scalar(0, 0, 255), -1);
-    }
-    */
-    //imshow("x", image);
+    drawContours(image, approxPoint, -1, Scalar::all(255), 3);
 }
 
 bool ProcessPicture::ReturnFlag()
@@ -137,17 +125,12 @@ vector<Point> ProcessPicture::ReturnBoundary()
     return boundary;
 }
 
-QImage ProcessPicture::drawbounBoundary(vector<Point> points)
+QImage ProcessPicture::drawBoundary(vector<Point> points)
 {
     image = back.clone();
     //画边缘
-    drawContours(image, points, -1, Scalar::all(255), 10);
-    //画控制点
-    for(vector<Point>::iterator i = points.begin(); i != points.end(); i++)
-    {
-        cout << i->x << ',' << i->y << endl;
-        circle(image, *i, 10, Scalar(0, 0, 255), -1);
-    }
+    vector<vector<Point>> temp = {points};
+    drawContours(image, temp, -1, Scalar::all(255), 3);
     return ReturnImage();
 }
 
@@ -160,26 +143,3 @@ int ProcessPicture::height()
 {
     return image.rows;
 }
-/*
-vector<Point> ProcessPicture::FindBiggestContour(Mat binary_image)
-{
-    vector<vector<Point>> contours;
-    vector<Vec4i> hierarchy;
-
-    int largest_area = 0;
-    int largest_contour_index = 0;
-
-    findContours(binary_image, contours, hierarchy,RETR_CCOMP,CHAIN_APPROX_SIMPLE);
-
-        for (int i = 0; i < contours.size(); i++) // iterate through each contour.
-        {
-            double a = contourArea(contours[i], false);  //  Find the area of contour
-            if (a > largest_area){
-                largest_area = a;
-                largest_contour_index = i;                //Store the index of largest contour
-            }
-        }
-
-        return contours[largest_contour_index];
-}
-*/

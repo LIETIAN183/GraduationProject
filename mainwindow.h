@@ -4,6 +4,7 @@
 #include "processpicture.h"
 #include <QMainWindow>
 #include "myscene.h"
+#include "datamodel.h"
 namespace Ui
 {
 class MainWindow;
@@ -15,17 +16,18 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    void resizeEvent(QResizeEvent *event);
     ~MainWindow();
-    // static
+
 public slots:
     void readFrontImage();
-
+    void freshPic();
+    void flatModel();
 private:
     Ui::MainWindow *ui;
     ProcessPicture *pp;
-    bool read_picture;
+    //bool read_picture;
     MyScene *scene;
+    DataModel *model;
 };
 
 #endif // MAINWINDOW_H

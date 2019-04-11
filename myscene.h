@@ -17,23 +17,19 @@ class MyScene : public QGraphicsScene
     Q_OBJECT
 public:
     explicit MyScene(QObject *parent = nullptr);
-    MyScene(QPixmap pix, vector<Point> points, int width, int height);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
-
-
+    void SetScene(QPixmap pix, vector<Point> points, int width, int height);//配置树叶图片和控制点，存储树叶图片大小
+    vector<Point> returnResult();//返回控制点数据
+    void ChangePic(QPixmap pix);//传递修改控制点后新的picture
 public slots:
-    void ChangePosition(int index, double x, double y);
-
+    void ChangePosition(int index, double x, double y);//对控制点进行修改
 signals:
-
-public slots:
+    void Modified();//scene内item发生改变的信号
 private:
     MyPixItem *pix_item;
     vector<MyCircleItem> circles;
     vector<Point> result;
-    int width, height;
-    int pix_width, pix_height;
-    QGraphicsItem  *item;
+    int width, height;//读入图片的宽高
+    int pix_width, pix_height;//view中pix显示的宽高
 };
 
 #endif // MYSCENE_H

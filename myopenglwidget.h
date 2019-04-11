@@ -9,6 +9,7 @@ class MyOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 public:
     explicit MyOpenGLWidget(QWidget *parent = nullptr);
+    void TestFunction(int i);
 
 protected:
     void initializeGL();

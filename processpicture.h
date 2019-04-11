@@ -18,7 +18,7 @@ public:
     void FindBoundary();
     bool ReturnFlag();
     vector<Point> ReturnBoundary();
-    QImage drawbounBoundary(vector<Point> points);
+    QImage drawBoundary(vector<Point> points);
     int width();
     int height();
 signals:
