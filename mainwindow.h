@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include "myscene.h"
 #include "datamodel.h"
+#include "myopenglwidget.h"
 namespace Ui
 {
 class MainWindow;

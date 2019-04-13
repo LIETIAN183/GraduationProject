@@ -5,7 +5,6 @@
 #-------------------------------------------------
 
 QT       += core gui
-
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 QT_CONFIG -= no-pkg-config
@@ -64,3 +63,6 @@ SUBDIRS += \
     GraduationProject.pro
 
 DISTFILES +=
+
+RESOURCES += \
+    shaders.qrc

@@ -3,6 +3,9 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>
 
 class MyOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -19,6 +22,11 @@ protected:
 signals:
 
 public slots:
+private:
+    QOpenGLShaderProgram program;
+    GLuint vertex_array_object ;
+    QOpenGLVertexArrayObject vao;
+    QOpenGLBuffer vbo;
 };
 
 #endif // MYOPENGLWIDGET_H
