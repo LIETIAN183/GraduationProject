@@ -5,6 +5,7 @@
 #include <vector>
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include <QOpenGLFunctions>
 using namespace std;
 using namespace cv;
 
@@ -14,6 +15,7 @@ class DataModel : public QObject
 public:
     explicit DataModel(QObject *parent = nullptr);
     void SaveBoundary(vector<Point> boundary);
+    vector<GLfloat> ReturnBoundary();
 signals:
 
 public slots:

@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->ac_Front_View, SIGNAL(triggered()), this, SLOT(readFrontImage()));
     connect(this->scene, SIGNAL(Modified()), this, SLOT(freshPic()));
     connect(this->ui->ac_Flat_Model, SIGNAL(triggered()), this, SLOT(flatModel()));
-    this->ui->openGLWidget->TestFunction(1);
 }
 
 MainWindow::~MainWindow()
@@ -50,10 +49,30 @@ void MainWindow::freshPic()
     QImage tmp = this->pp->drawBoundary(temp);
     QPixmap pix = QPixmap::fromImage(tmp.scaled(ui->graphicsView->size(), Qt::KeepAspectRatio));
     this->scene->ChangePic(pix);
-    model->SaveBoundary(temp);
 }
 
 void MainWindow::flatModel()
 {
+    //存储进入模型
+    vector<Point> temp = this->scene->returnResult();
 
+    this->model->SaveBoundary(temp);
+
+
+    vector<GLfloat> tmp = model->ReturnBoundary();
+
+    if(tmp.empty())
+    {
+        QMessageBox::warning(this, "Warning", "请先读取图片");
+        return;
+    }
+    /*
+    vector<GLfloat> temp =
+    {
+        -0.5f, 0.5f, 0.0f,
+            0.0f, -0.5f, 0.0f,
+            0.5f, 0.5f, 0.0f
+        };*/
+
+    this->ui->openGLWidget->TestFunction(tmp);
 }

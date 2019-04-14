@@ -3,48 +3,54 @@
 using namespace std;
 MyOpenGLWidget::MyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
+    this->size = 0;
 }
 
 void MyOpenGLWidget::initializeGL()
 {
     // 为当前环境初始化OpenGL函数
     this->initializeOpenGLFunctions();
-
-
-
-
     // 创建顶点着色器
     QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     vshader->compileSourceFile(":/shaders/vsrc.vert");
     // 创建片段着色器
     QOpenGLShader *fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
     fshader->compileSourceFile(":/shaders/fsrc.frag");
-
     // 创建着色器程序
     program.addShader(vshader);
-    //program.bindAttributeLocation("aPos", 0);
     program.addShader(fshader);
     program.link();
-    assert(program.bind());
+    program.bind();
     // 三角形的顶点数据
-    //const float triangle[] =
-    GLfloat triangle[] =
+    GLfloat x[] =
     {
-        //---- 位置 ----
-        -0.5f, -0.5f, 0.0f, // 左下
-            0.5f, -0.5f, 0.0f,// 右下
-            0.0f, 0.5f, 0.0f// 正上
+        -0.5f, -0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f,
+            0.0f, 0.5f, 0.0f
         };
-
-    vao.create();
-    QOpenGLVertexArrayObject::Binder vaoBinder(&vao);
+    vector<GLfloat> triangle;
+    for(int i = 0 ; i < sizeof (x) / sizeof (GLfloat); i++)
+    {
+        triangle.push_back(x[i]);
+    }
     vbo.create();
     vbo.bind();
-    vbo.allocate(triangle, sizeof (triangle));
-    vbo.bind();
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    f->glEnableVertexAttribArray(0);
+    vbo.allocate(&triangle[0], triangle.size()*sizeof (GLfloat));
+    this->size = static_cast<int>(triangle.size() / 3);
+
+    vao.create();
+    vao.bind();
+    //QOpenGLVertexArrayObject::Binder vaoBinder(&vao);
+    //QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+    // f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    // f->glEnableVertexAttribArray(0);
+
+
+    program.setAttributeBuffer(0, GL_FLOAT, 0, 3, 0);
+    program.enableAttributeArray(0);
+
+    //释放
+    vao.release();
     vbo.release();
     program.release();
     /*
@@ -76,26 +82,33 @@ void MyOpenGLWidget::resizeGL(int width, int height)
 
 void MyOpenGLWidget::paintGL()
 {
-    /*
+
     //设置背景颜色
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-
     // 绘制三角形
     program.bind();
-    glBindVertexArray (vertex_array_object);
-    glDrawArrays (GL_TRIANGLES, 0, 3);//GL_POINTS无效果？
-    glBindVertexArray (0);
-
-    */
-    QOpenGLVertexArrayObject::Binder vaoBinder(&vao);
-    program.bind();
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    {
+        vao.bind();
+        glDrawArrays(GL_TRIANGLE_FAN, 0, this->size);
+        vao.release();
+    }
     program.release();
 }
 
-void MyOpenGLWidget::TestFunction(int i)
+void MyOpenGLWidget::TestFunction(vector<GLfloat> x)
 {
-    Q_UNUSED(i);
+    //program.bind();
+    for(vector<GLfloat>::iterator i = x.begin(); i != x.end(); i++)
+    {
+        cout << *i << endl;
+    }
+    vbo.bind();
+    vbo.allocate(&x[0], x.size()*sizeof(GLfloat));
+    this->size = static_cast<int>(x.size() / 3);
+    vbo.release();
+    //program.release();
+    update();
+    cout << "READ" << endl;
 }

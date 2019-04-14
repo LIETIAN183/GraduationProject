@@ -108,8 +108,6 @@ void ProcessPicture::FindBoundary()
     approxPolyDP(contours[0], approxPoint[0], 10, true);
     //赋值到boundary数组
     boundary.assign(approxPoint[0].begin(), approxPoint[0].end());
-    //Wait to delete
-    cout << approxPoint[0].size() << endl;
     //-------
     //画边缘
     drawContours(image, approxPoint, -1, Scalar::all(255), 3);

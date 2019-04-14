@@ -6,13 +6,15 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
+#include <vector>
+using namespace std;
 
 class MyOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
     explicit MyOpenGLWidget(QWidget *parent = nullptr);
-    void TestFunction(int i);
+    void TestFunction(vector<GLfloat> x);
 
 protected:
     void initializeGL();
@@ -27,6 +29,7 @@ private:
     GLuint vertex_array_object ;
     QOpenGLVertexArrayObject vao;
     QOpenGLBuffer vbo;
+    int size;
 };
 
 #endif // MYOPENGLWIDGET_H
