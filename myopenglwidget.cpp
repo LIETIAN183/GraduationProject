@@ -1,15 +1,21 @@
 #include "myopenglwidget.h"
 #include <iostream>
+#include <QKeyEvent>
 using namespace std;
 MyOpenGLWidget::MyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
+    setFocusPolicy(Qt::StrongFocus);
     this->size = 0;
+    translate = -6.0;
+    xRot = zRot = 0.0;
+    yRot = -30.0;
 }
 
 void MyOpenGLWidget::initializeGL()
 {
     // 为当前环境初始化OpenGL函数
     this->initializeOpenGLFunctions();
+    //this->glEnable(GL_DEPTH_TEST);
     // 创建顶点着色器
     QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     vshader->compileSourceFile(":/shaders/vsrc.vert");
@@ -48,6 +54,8 @@ void MyOpenGLWidget::initializeGL()
 
     program.setAttributeBuffer(0, GL_FLOAT, 0, 3, 0);
     program.enableAttributeArray(0);
+
+
 
     //释放
     vao.release();
@@ -91,15 +99,23 @@ void MyOpenGLWidget::paintGL()
     program.bind();
     {
         vao.bind();
+
+        QMatrix4x4 matrix;
+        matrix.perspective(45.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 100.0f);
+        matrix.translate(0, 0, translate);
+        matrix.rotate(xRot, 1.0, 0.0, 0.0);
+        matrix.rotate(yRot, 0.0, 1.0, 0.0);
+        matrix.rotate(zRot, 0.0, 0.0, 1.0);
+        program.setUniformValue("matrix", matrix);
+
         glDrawArrays(GL_TRIANGLE_FAN, 0, this->size);
         vao.release();
     }
     program.release();
 }
 
-void MyOpenGLWidget::TestFunction(vector<GLfloat> x)
+void MyOpenGLWidget::Draw(vector<GLfloat> x)
 {
-    //program.bind();
     for(vector<GLfloat>::iterator i = x.begin(); i != x.end(); i++)
     {
         cout << *i << endl;
@@ -108,7 +124,39 @@ void MyOpenGLWidget::TestFunction(vector<GLfloat> x)
     vbo.allocate(&x[0], x.size()*sizeof(GLfloat));
     this->size = static_cast<int>(x.size() / 3);
     vbo.release();
-    //program.release();
     update();
     cout << "READ" << endl;
+}
+
+void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
+{
+    cout << "test" << endl;
+    switch (event->key())
+    {
+    case Qt::Key_Up:
+        xRot += 10;
+        cout << "Pressed Key_Up" << endl;
+        break;
+    case Qt::Key_Left:
+        yRot += 10;
+        break;
+    case Qt::Key_Right:
+        zRot += 10;
+        break;
+    case Qt::Key_Down:
+        translate -= 1;
+        break;
+    case Qt::Key_Space:
+        translate += 1;
+        break;
+    case Qt::Key_R:
+        translate = -6.0;
+        xRot = zRot = 0.0;
+        yRot = -30.0;
+        break;
+    default:
+        break;
+    }
+    update();
+    QOpenGLWidget::keyPressEvent(event);
 }

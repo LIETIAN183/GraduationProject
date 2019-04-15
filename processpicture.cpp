@@ -110,7 +110,7 @@ void ProcessPicture::FindBoundary()
     boundary.assign(approxPoint[0].begin(), approxPoint[0].end());
     //-------
     //画边缘
-    drawContours(image, approxPoint, -1, Scalar::all(255), 3);
+    //drawContours(image, approxPoint, -1, Scalar::all(255), 3);
 }
 
 bool ProcessPicture::ReturnFlag()

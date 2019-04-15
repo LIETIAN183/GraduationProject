@@ -41,6 +41,7 @@ void MainWindow::readFrontImage()
     vector<Point> temp = this->pp->ReturnBoundary();
     this->scene->SetScene(pix, temp, pp->width(), pp->height());
     this->ui->graphicsView->setScene(scene);
+    freshPic();
 }
 
 void MainWindow::freshPic()
@@ -74,5 +75,6 @@ void MainWindow::flatModel()
             0.5f, 0.5f, 0.0f
         };*/
 
-    this->ui->openGLWidget->TestFunction(tmp);
+    this->ui->openGLWidget->Draw(tmp);
+    this->ui->graphicsView->hide();
 }

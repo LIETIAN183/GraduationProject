@@ -14,7 +14,9 @@ class MyOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 public:
     explicit MyOpenGLWidget(QWidget *parent = nullptr);
-    void TestFunction(vector<GLfloat> x);
+    void Draw(vector<GLfloat> x);
+    void keyPressEvent(QKeyEvent *event);
+
 
 protected:
     void initializeGL();
@@ -30,6 +32,8 @@ private:
     QOpenGLVertexArrayObject vao;
     QOpenGLBuffer vbo;
     int size;
+
+    GLfloat translate, xRot, yRot, zRot;
 };
 
 #endif // MYOPENGLWIDGET_H
