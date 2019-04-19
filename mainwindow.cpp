@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QMessageBox>
+#include <vector>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -76,5 +77,5 @@ void MainWindow::flatModel()
         };*/
 
     this->ui->openGLWidget->Draw(tmp);
-    this->ui->graphicsView->hide();
+    //this->ui->graphicsView->hide();
 }

@@ -21,6 +21,7 @@ signals:
 public slots:
 private:
     vector<Point> boundary;
+
 };
 
 #endif // DATAMODEL_H

@@ -34,6 +34,7 @@ private:
     int size;
 
     GLfloat translate, xRot, yRot, zRot;
+    //QMatrix4x4 matrix;
 };
 
 #endif // MYOPENGLWIDGET_H

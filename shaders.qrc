@@ -2,5 +2,7 @@
     <qresource prefix="/shaders">
         <file>fsrc.frag</file>
         <file>vsrc.vert</file>
+        <file>tcs.cont</file>
+        <file>tes.eval</file>
     </qresource>
 </RCC>

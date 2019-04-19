@@ -70,6 +70,7 @@ void ProcessPicture::FindBoundary()
     //方法2
     //边缘扫描
     Canny(gray, gray, 10, 30);
+    imshow("gray", gray);
     //闭合边缘曲线
     Mat element = getStructuringElement(MORPH_RECT, Size(9, 9));
     morphologyEx(gray, gray, MORPH_CLOSE, element);
