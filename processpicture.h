@@ -19,6 +19,7 @@ public:
     bool ReturnFlag();
     vector<Point> ReturnBoundary();
     QImage drawBoundary(vector<Point> points);
+    vector<float> PointList(vector<Point> points);
     int width();
     int height();
 signals:
@@ -28,7 +29,7 @@ private:
     Mat image;
     Mat back;
     Mat gray;
-    Mat edge;
+    //Mat edge;
     Mat result;
     vector<Point> boundary;
     bool find_flag;

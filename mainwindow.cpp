@@ -49,6 +49,7 @@ void MainWindow::freshPic()
 {
     vector<Point> temp = this->scene->returnResult();
     QImage tmp = this->pp->drawBoundary(temp);
+    cout << "QImage width:" << tmp.width() << ";height:" << tmp.height() << endl;
     QPixmap pix = QPixmap::fromImage(tmp.scaled(ui->graphicsView->size(), Qt::KeepAspectRatio));
     this->scene->ChangePic(pix);
 }
@@ -56,11 +57,18 @@ void MainWindow::freshPic()
 void MainWindow::flatModel()
 {
     //存储进入模型
+
+    //----wait
+    //需要检测是否已经加载图片
+
     vector<Point> temp = this->scene->returnResult();
+    vector<GLfloat> tmp = this->pp->PointList(temp);
+    this->ui->openGLWidget->Draw(tmp);
 
-    this->model->SaveBoundary(temp);
+    //this->model->SaveBoundary(temp);
 
 
+    /*
     vector<GLfloat> tmp = model->ReturnBoundary();
 
     if(tmp.empty())
@@ -68,14 +76,7 @@ void MainWindow::flatModel()
         QMessageBox::warning(this, "Warning", "请先读取图片");
         return;
     }
-    /*
-    vector<GLfloat> temp =
-    {
-        -0.5f, 0.5f, 0.0f,
-            0.0f, -0.5f, 0.0f,
-            0.5f, 0.5f, 0.0f
-        };*/
 
-    this->ui->openGLWidget->Draw(tmp);
+    this->ui->openGLWidget->Draw(tmp);*/
     //this->ui->graphicsView->hide();
 }

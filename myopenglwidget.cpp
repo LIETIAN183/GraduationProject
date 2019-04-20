@@ -1,5 +1,6 @@
 #include "myopenglwidget.h"
 #include <iostream>
+#include <math.h>
 #include <QKeyEvent>
 using namespace std;
 MyOpenGLWidget::MyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
@@ -14,7 +15,6 @@ void MyOpenGLWidget::initializeGL()
 {
     // 为当前环境初始化OpenGL函数
     this->initializeOpenGLFunctions();
-    //this->glEnable(GL_DEPTH_TEST);
     // 创建顶点着色器
     QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     vshader->compileSourceFile(":/shaders/vsrc.vert");
@@ -37,44 +37,33 @@ void MyOpenGLWidget::initializeGL()
     program.link();
     program.bind();
     // 三角形的顶点数据
-    /*
-        vector<GLfloat> triangle =
-        {
-            //-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.5f, 0.5f, 0.0f, -0.5f, 0.5f, 0.0f
-            1.4f / 4, 2.4f / 4, 0.0,
-            1.4f / 4, 2.4f / 4, 0.784f / 4,
-            0.784f / 4, 2.4f / 4, 1.4f / 4,
-            0.0, 2.4f / 4, 1.4f / 4,
-            1.3375f / 4, 2.53125f / 4, 0.0,
-            1.3375f / 4, 2.53125f / 4, 0.749f / 4,
-            0.749f / 4, 2.53125f / 4, 1.3375f / 4,
-            0.0f / 4, 2.53125f / 4, 1.3375f / 4,
-            1.4375f / 4, 2.53125f / 4, 0.0,
-            1.4375f / 4, 2.53125f / 4, 0.805f / 4,
-            0.805f / 4, 2.53125f / 4, 1.4375f / 4,
-            0.0, 2.53125f / 4, 1.4375f / 4,
-            1.5f / 4, 2.4f / 4, 0.0,
-            1.5f / 4, 2.4f / 4, 0.84f / 4,
-            0.84f / 4, 2.4f / 4, 1.5f / 4,
-            0.0, 2.4f / 4, 1.5f / 4
-        };
-        */
-    vector<GLfloat> triangle =
+    GLfloat triangle[] =
     {
-        -1.5, -1.5, 4.0, -0.5, -1.5, 2.0,
-            0.5, -1.5, -1.0, 1.5, -1.5, 2.0,
-            -1.5, -0.5, 1.0, -0.5, -0.5, 3.0,
-            0.5, -0.5, 0.0, 1.5, -0.5, -1.0,
-            -1.5, 0.5, 4.0, -0.5, 0.5, 0.0,
-            0.5, 0.5, 3.0, 1.5, 0.5, 4.0,
-            -1.5, 1.5, -2.0, -0.5, 1.5, -2.0,
-            0.5, 1.5, 0.0, 1.5, 1.5, -1.0
-        };
+        0.0f, 0.75f, 0.0f, 0.25f, 0.750f, 0.0f,
+        0.5f, 0.75f, 0.0f, 0.75f, 0.75f, 0.0f,
+        0.0f, 0.5f, 0.0f, 0.25f, 0.5f, 0.0f,
+        0.5f, 0.5f, 0.0f, 0.75f, 0.5f, 0.0f,
+        0.0f, 0.25f, 0.0f, 0.25f, 0.25f, 0.0f,
+        0.5f, 0.25f, 0.3f, 0.75f, 0.25f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.25f, 0.0f, 0.2f,
+        0.5f, 0.0f, 0.0f, 0.75f, 0.0f, 0.0f,
+
+        0.0f, -0.75f, 0.0f, 0.25f, -0.750f, 0.0f,
+        0.5f, -0.75f, 0.0f, 0.75f, -0.75f, 0.0f,
+        0.0f, -0.5f, 0.0f, 0.25f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f, 0.75f, -0.5f, 0.0f,
+        0.0f, -0.25f, 0.0f, 0.25f, -0.25f, 0.0f,
+        0.5f, -0.25f, 0.3f, 0.75f, -0.25f, 0.0f,
+        0.0f, -0.0f, 0.0f, 0.25f, -0.0f, 0.2f,
+        0.5f, -0.0f, 0.0f, 0.75f, -0.0f, 0.0f
+    };
     vbo.create();
     vbo.bind();
-    vbo.allocate(&triangle[0], static_cast<int>(triangle.size()*sizeof (GLfloat)));
-    this->size = static_cast<int>(triangle.size() / 3);
-    cout << "Size:" << size << endl;
+    vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    vbo.allocate(triangle, sizeof(triangle));
+    //cout << "Size:" << static_cast<int>(triangle.size()*sizeof (GLfloat)) << endl;
+    this->size = static_cast<int>(sizeof(triangle) / sizeof (GLfloat) / 3);
+    cout << "Size:" << this->size << endl;
 
     vao.create();
     vao.bind();
@@ -87,17 +76,26 @@ void MyOpenGLWidget::initializeGL()
     program.setAttributeBuffer(0, GL_FLOAT, 0, 3, 0);
     program.enableAttributeArray(0);
     glPatchParameteri(GL_PATCH_VERTICES, 16);
+
     //释放
     vao.release();
     vbo.release();
     program.release();
+
     /*
     // 生成并绑定 VBO
     GLuint vertex_buffer_object ;
     glGenBuffers (1, &vertex_buffer_object );
     glBindBuffer (GL_ARRAY_BUFFER, vertex_buffer_object );
     // 将顶点数据绑定至当前默认的缓冲中
-    glBufferData (GL_ARRAY_BUFFER, sizeof (triangle), triangle, GL_STATIC_DRAW );
+    glBufferData (GL_ARRAY_BUFFER, sizeof(TeapotVertices),
+                  TeapotVertices, GL_STATIC_DRAW );
+
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ebo );
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(TeapotIndices),
+                  TeapotIndices, GL_STATIC_DRAW );
     // 生成并绑定 VAO
     GLuint vertex_array_object ;
     glGenVertexArrays (1, &vertex_array_object );
@@ -123,9 +121,10 @@ void MyOpenGLWidget::resizeGL(int width, int height)
 void MyOpenGLWidget::paintGL()
 {
 
+
     //设置背景颜色
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // 绘制三角形
     program.bind();
@@ -138,25 +137,30 @@ void MyOpenGLWidget::paintGL()
         matrix.rotate(yRot, 0.0, 1.0, 0.0);
         matrix.rotate(zRot, 0.0, 0.0, 1.0);
         program.setUniformValue("matrix", matrix);
+
+        glDrawArrays(GL_PATCHES, 0, this->size);
         //glPointSize(5);
-        glDrawArrays(GL_PATCHES, 0, this->size);//GL_POINTS时未设置glPointSize大小，则点会太小而无法看见
+        //glDrawArrays(GL_POINTS, 0, 16);
+
         vao.release();
     }
     program.release();
+
 }
 
 void MyOpenGLWidget::Draw(vector<GLfloat> x)
 {
-    for(vector<GLfloat>::iterator i = x.begin(); i != x.end(); i++)
-    {
-        cout << *i << endl;
-    }
     vbo.bind();
     vbo.allocate(&x[0], static_cast<int>(x.size()*sizeof(GLfloat)));
     this->size = static_cast<int>(x.size() / 3);
     vbo.release();
+
+    translate = -6.0;
+    xRot = zRot = yRot = 0.0;
+
     update();
     cout << "READ" << endl;
+
 }
 
 void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
@@ -165,7 +169,6 @@ void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
     {
     case Qt::Key_Up:
         xRot += 10;
-        cout << "Pressed Key_Up" << endl;
         break;
     case Qt::Key_Left:
         yRot += 10;
