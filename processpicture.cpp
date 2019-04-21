@@ -109,7 +109,7 @@ void ProcessPicture::FindBoundary()
     }
     vector<vector<Point>> approxPoint(contours.size());
     //获取控制点
-    approxPolyDP(contours[0], approxPoint[0], 7, true);
+    approxPolyDP(contours[0], approxPoint[0], 8.5, true);
     //赋值到boundary数组
     boundary.assign(approxPoint[0].begin(), approxPoint[0].end());
     //-------
@@ -240,6 +240,7 @@ vector<float> ProcessPicture::PointList(vector<Point> points)
         cout << endl;
         */
     }
+
     cout << middle.size() << endl;
     vector<Point> middle2;//存储插入6个控制点后的控制点数组
     int a = 0, b = 0, delta = 0;
@@ -255,104 +256,92 @@ vector<float> ProcessPicture::PointList(vector<Point> points)
         }
         middle2.push_back(*(i + 1));
     }
-    int t = (middle.size() / 2 - 1) % 3;
 
-    //补全控制点
-    if(t != 0)
-    {
-        cout << "t:" << t << endl;
-        //获取倒数两个点
-        Point p1 = *(middle.end() - 2);
-        Point p2 = middle.back();
-        for(int j = 0; j < 3 - t; j++)
-        {
-            middle2.push_back(p1);
-            for(int x = 1; x <= 5; x++)
-            {
-                middle2.push_back(Point(p1.x + x * delta, p1.y));
 
-            }
-            middle2.push_back(p2);
-        }
-    }
-
-    cout << middle2.size() << endl;
-
-    //此时已获得所有控制顶点
-    //------------
-    //二维点转换三维点
-    vector<Point3i> points3i;
-    //uint w = 0;
-    int w = 0, v = 0;
+    //2维点转换3维点，此时获得所有控制点
+    //此时save middle2数组可以用于计算纹理坐标
+    vector<Point3f> control_point;
     for(vector<Point>::iterator i = middle2.begin(); i != middle2.end(); i++)
     {
-        if(v % 7 == 0)
-        {
-            w += 10;
-        }
-        //qsrand(w++);
-        points3i.push_back(Point3i(i->x, i->y, w));
-
-        /*
-        if((v - 3) % 7 == 0)
-        {
-        points3i.push_back(Point3i(i->x, i->y, w));
-        w += 10;
-        }
-        else
-        {
-        points3i.push_back(Point3i(i->x, i->y, 0));
-        }
-        */
-        //points3i.push_back(Point3i(i->x, i->y, 0/*qrand() % (max_x - min_x) / 15*/));
-
-        v++;
-    }
-
-    //----------------------
-
-
-    //----随机扰动z值
-
-
-    //-----之后再扰动会出错
-    //重新排序控制点以获得可以用于绘制bezier surface的控制点
-    vector<Point3i> middle_result;
-    //以4x4为构造一个bezier surface；i代表每一块曲线的第一给元素的id
-    for(int i = 0; i < static_cast<int>(middle2.size() - 7); i += 21)
-    {
-        for(int j = 0; j <= 21; j += 7)
-        {
-            for(int k = 0; k <= 3; k++)
-            {
-                middle_result.push_back(points3i.at(static_cast<unsigned long>(i + j + k)));
-            }
-        }
-
-        for(int j = 0; j <= 21; j += 7)
-        {
-            for(int k = 0; k <= 3; k++)
-            {
-                middle_result.push_back(points3i.at(static_cast<unsigned long>(i + 3 + j + k)));
-            }
-        }
-    }
-    cout << "middle_result Size:" << middle_result.size() << endl;
-    //cout << middle2 << endl;
-
-    //构造结束，获得所有控制点对应mat图案上的坐标
-    //平移叶片中央到坐标原点，同时反转y轴，因mat y轴向下，opengl y轴向上
-    vector<GLfloat> res;
-    for(vector<Point3i>::iterator i = middle_result.begin(); i != middle_result.end(); i++)
-    {
+        //移动树叶中央到原点
         i->y = -i->y;
         i->x -= min_x;
         i->y += min_y;
         i->x -= (max_x - min_x) / 2;
         i->y += (max_y - min_y) / 2;
-        res.push_back(i->x * 1.75f / (max_x - min_x));
-        res.push_back(i->y * 1.75f / (max_x - min_x));
-        res.push_back(i->z * 1.75f / (max_x - min_x));
+
+        //等比例缩小
+        //i->x *= 1.75f / (max_x - min_x);
+        //i->y *= 1.75f / (max_x - min_x);
+        control_point.push_back(Point3f(i->x * 1.5f / (max_x - min_x), i->y * 1.5f / (max_x - min_x), 0));
+    }
+
+    //---对control_point进行变形操作
+
+
+    for(vector<Point3f>::iterator i = control_point.begin(); i != control_point.end(); i++)
+    {
+        if(i->y > 0)
+        {
+            i->z = -static_cast<float>(pow(i->y, 1.5) * 0.5);
+        }
+    }
+
+    //------------------------
+
+
+    int t = (middle.size() / 2 - 1) % 3;
+
+    //补全控制点         //未补全纹理坐标
+    if(t != 0)
+    {
+        //获取倒数7个点
+        vector<Point3f> temp;
+        for(vector<Point3f>::iterator i = control_point.end() - 7; i != control_point.end(); i++)
+        {
+            temp.push_back(*i);
+        }
+        //补全控制点
+        for(int j = 0; j < 3 - t; j++)
+        {
+            for(vector<Point3f>::iterator i = temp.begin(); i != temp.end(); i++)
+            {
+                control_point.push_back(*i);
+            }
+        }
+    }
+
+    //重新排序控制点以获得可以用于绘制bezier surface的控制点
+    vector<Point3f> middle_result;
+    //以4x4为构造一个bezier surface；i代表每一块曲线的第一给元素的id
+    for(int i = 0; i < static_cast<int>(control_point.size() - 7); i += 21)
+    {
+        for(int j = 0; j <= 21; j += 7)
+        {
+            for(int k = 0; k <= 3; k++)
+            {
+                middle_result.push_back(control_point.at(static_cast<unsigned long>(i + j + k)));
+            }
+        }
+
+        for(int j = 0; j <= 21; j += 7)
+        {
+            for(int k = 0; k <= 3; k++)
+            {
+                middle_result.push_back(control_point.at(static_cast<unsigned long>(i + 3 + j + k)));
+            }
+        }
+    }
+    cout << "middle_result Size:" << middle_result.size() << endl;
+
+    //转换为用于构造模型的数据存储方式
+    vector<GLfloat> res;
+    for(vector<Point3f>::iterator i = middle_result.begin(); i != middle_result.end(); i++)
+    {
+
+        res.push_back(i->x);
+        res.push_back(i->y);
+        res.push_back(i->z);
     }
 
     return res;
