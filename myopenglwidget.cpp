@@ -2,6 +2,8 @@
 #include <iostream>
 #include <math.h>
 #include <QKeyEvent>
+#include <QOpenGLTexture>
+
 using namespace std;
 MyOpenGLWidget::MyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -9,6 +11,8 @@ MyOpenGLWidget::MyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     this->size = 0;
     translate = -6.0;
     xRot = zRot = yRot = 0.0;
+    mode = GL_FILL;
+    this->Add_tex = false;
 }
 
 void MyOpenGLWidget::initializeGL()
@@ -48,7 +52,7 @@ void MyOpenGLWidget::initializeGL()
         0.0f, 0.0f, 0.0f, 0.25f, 0.0f, 0.2f,
         0.5f, 0.0f, 0.0f, 0.75f, 0.0f, 0.0f,
 
-        0.0f, -0.75f, 0.0f, 0.25f, -0.750f, 0.0f,
+        0.0f, -0.75f, 0.0f, 0.25f, -0.75f, 0.0f,
         0.5f, -0.75f, 0.0f, 0.75f, -0.75f, 0.0f,
         0.0f, -0.5f, 0.0f, 0.25f, -0.5f, 0.0f,
         0.5f, -0.5f, 0.0f, 0.75f, -0.5f, 0.0f,
@@ -110,7 +114,8 @@ void MyOpenGLWidget::initializeGL()
 
 
     //线框模式
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_DEPTH_TEST);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void MyOpenGLWidget::resizeGL(int width, int height)
@@ -138,9 +143,18 @@ void MyOpenGLWidget::paintGL()
         matrix.rotate(zRot, 0.0, 0.0, 1.0);
         program.setUniformValue("matrix", matrix);
 
+        glPolygonMode(GL_FRONT_AND_BACK, mode);
+        if(Add_tex)
+        {
+            textures[0]->bind(0);
+        }
+
         glDrawArrays(GL_PATCHES, 0, this->size);
-        //glPointSize(5);
-        //glDrawArrays(GL_POINTS, 0, 16);
+
+        if(Add_tex)
+        {
+            textures[0]->release();
+        }
 
         vao.release();
     }
@@ -148,18 +162,35 @@ void MyOpenGLWidget::paintGL()
 
 }
 
-void MyOpenGLWidget::Draw(vector<GLfloat> x)
+void MyOpenGLWidget::Draw(vector<GLfloat> x, vector<GLfloat> tex, QImage texture)
 {
+    program.bind();
     vbo.bind();
-    vbo.allocate(&x[0], static_cast<int>(x.size()*sizeof(GLfloat)));
+    vao.bind();
+    //需要额外分配空间给tex数组
+    vbo.allocate(&x[0], static_cast<int>((x.size() + tex.size())*sizeof(GLfloat)));
     this->size = static_cast<int>(x.size() / 3);
+
+    this->textures[0] = new QOpenGLTexture(texture.mirrored());
+    this->Add_tex = true;
+
+    vbo.write(static_cast<int>(x.size()*sizeof(GLfloat)), &tex[0], static_cast<int>(tex.size()*sizeof(GLfloat)));
+
+    //GLuint vTexCoord = program.attributeLocation("vTexCoord");
+    program.setAttributeBuffer(1, GL_FLOAT, static_cast<int>(x.size()*sizeof(GLfloat)), 2, 0);
+    program.enableAttributeArray(1);
+    program.setUniformValue("tex", 0);
+
+    vao.release();
     vbo.release();
+    program.release();
 
     translate = -6.0;
     xRot = zRot = yRot = 0.0;
 
     update();
     cout << "READ" << endl;
+
 
 }
 
@@ -185,6 +216,9 @@ void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_R:
         translate = -6.0;
         xRot = zRot = yRot = 0.0;
+        break;
+    case Qt::Key_M:
+        mode = (mode == GL_LINE ? GL_FILL : GL_LINE);
         break;
     default:
         break;

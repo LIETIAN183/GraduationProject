@@ -4,6 +4,7 @@
 #include <QObject>
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include <QOpenGLFunctions>
 #include <vector>
 using namespace std;
 using namespace cv;
@@ -19,9 +20,11 @@ public:
     bool ReturnFlag();
     vector<Point> ReturnBoundary();
     QImage drawBoundary(vector<Point> points);
-    vector<float> PointList(vector<Point> points);
+    vector<GLfloat> PointList(vector<Point> points);
     int width();
     int height();
+    vector<GLfloat> ReturnTexCoord();
+    QImage getOriginPic();
 signals:
 
 public slots:
@@ -33,6 +36,7 @@ private:
     Mat result;
     vector<Point> boundary;
     bool find_flag;
+    vector<Point> texCoord;
 };
 
 #endif // PROCESSPICTURE_H

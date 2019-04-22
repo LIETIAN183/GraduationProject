@@ -63,7 +63,15 @@ void MainWindow::flatModel()
 
     vector<Point> temp = this->scene->returnResult();
     vector<GLfloat> tmp = this->pp->PointList(temp);
-    this->ui->openGLWidget->Draw(tmp);
+    vector<GLfloat> tex = this->pp->ReturnTexCoord();
+    /*
+    for(vector<GLfloat>::iterator i = tex.begin(); i != tex.end(); i += 2)
+    {
+        cout << "[" << *i << "," << *(i + 1) << "]" << endl;
+    }
+    */
+    QImage texture = this->pp->getOriginPic();
+    this->ui->openGLWidget->Draw(tmp, tex, texture);
 
     //this->model->SaveBoundary(temp);
 

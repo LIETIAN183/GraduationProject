@@ -4,7 +4,6 @@
 #include <vector>
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include <QOpenGLFunctions>
 #include <QMessageBox>
 #include <QTime>
 using namespace cv;
@@ -153,7 +152,7 @@ bool PointSort(const Point &a, const Point &b)//y小的在前，相同时x小的
     return a.y < b.y ? true : (a.y > b.y ? false : (a.x < b.x ? true : false));
 }
 
-vector<float> ProcessPicture::PointList(vector<Point> points)
+vector<GLfloat> ProcessPicture::PointList(vector<Point> points)
 {
 
     int min_x, max_x, min_y, max_y;
@@ -259,6 +258,31 @@ vector<float> ProcessPicture::PointList(vector<Point> points)
 
 
     //2维点转换3维点，此时获得所有控制点
+    //------------------------------------计算纹理坐标
+    this->texCoord = middle2;
+
+    int t = (middle.size() / 2 - 1) % 3;
+
+    //补全纹理坐标控制点
+    if(t != 0)
+    {
+        //获取倒数7个点
+        vector<Point> temp;
+        for(vector<Point>::iterator i = texCoord.end() - 7; i != texCoord.end(); i++)
+        {
+            temp.push_back(*i);
+        }
+        //补全控制点
+        for(int j = 0; j < 3 - t; j++)
+        {
+            for(vector<Point>::iterator i = temp.begin(); i != temp.end(); i++)
+            {
+                texCoord.push_back(*i);
+            }
+        }
+    }
+    cout << "TexCoord " << texCoord.size() << endl;
+    //--------------------------------------
     //此时save middle2数组可以用于计算纹理坐标
     vector<Point3f> control_point;
     for(vector<Point>::iterator i = middle2.begin(); i != middle2.end(); i++)
@@ -273,11 +297,12 @@ vector<float> ProcessPicture::PointList(vector<Point> points)
         //等比例缩小
         //i->x *= 1.75f / (max_x - min_x);
         //i->y *= 1.75f / (max_x - min_x);
-        control_point.push_back(Point3f(i->x * 1.5f / (max_x - min_x), i->y * 1.5f / (max_x - min_x), 0));
+        control_point.push_back(Point3f(i->x * 1.75f / (max_y - min_y), i->y * 1.75f / (max_y - min_y), 0));
     }
 
-    //---对control_point进行变形操作
+    //---对control_point进行变形操作 弯曲
 
+    /*
 
     for(vector<Point3f>::iterator i = control_point.begin(); i != control_point.end(); i++)
     {
@@ -286,13 +311,13 @@ vector<float> ProcessPicture::PointList(vector<Point> points)
             i->z = -static_cast<float>(pow(i->y, 1.5) * 0.5);
         }
     }
-
+    */
     //------------------------
 
 
-    int t = (middle.size() / 2 - 1) % 3;
+    //int t = (middle.size() / 2 - 1) % 3;
 
-    //补全控制点         //未补全纹理坐标
+    //补全控制点
     if(t != 0)
     {
         //获取倒数7个点
@@ -310,7 +335,7 @@ vector<float> ProcessPicture::PointList(vector<Point> points)
             }
         }
     }
-
+    cout << "Control: " << control_point.size() << endl;
     //重新排序控制点以获得可以用于绘制bezier surface的控制点
     vector<Point3f> middle_result;
     //以4x4为构造一个bezier surface；i代表每一块曲线的第一给元素的id
@@ -345,4 +370,46 @@ vector<float> ProcessPicture::PointList(vector<Point> points)
     }
 
     return res;
+}
+
+
+vector<GLfloat> ProcessPicture::ReturnTexCoord()
+{
+    for(vector<Point>::iterator i = this->texCoord.begin(); i != this->texCoord.end(); i++)
+    {
+        i->y = image.rows - i->y;
+    }
+    vector<Point> temp;
+    for(int i = 0; i < static_cast<int>(texCoord.size() - 7); i += 21)
+    {
+        for(int j = 0; j <= 21; j += 7)
+        {
+            for(int k = 0; k <= 3; k++)
+            {
+                temp.push_back(texCoord.at(static_cast<unsigned long>(i + j + k)));
+            }
+        }
+
+        for(int j = 0; j <= 21; j += 7)
+        {
+            for(int k = 0; k <= 3; k++)
+            {
+                temp.push_back(texCoord.at(static_cast<unsigned long>(i + 3 + j + k)));
+            }
+        }
+    }
+    vector<GLfloat> res;
+    for(vector<Point>::iterator i = temp.begin(); i != temp.end(); i++)
+    {
+        res.push_back(i->x * 1.0f / image.cols);
+        res.push_back(i->y * 1.0f / image.rows);
+    }
+
+    return res;
+}
+
+QImage ProcessPicture::getOriginPic()
+{
+    image = back.clone();
+    return ReturnImage();
 }
