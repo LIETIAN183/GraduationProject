@@ -8,6 +8,7 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLTexture>
 #include <vector>
+#include <QTime>
 using namespace std;
 
 class MyOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
@@ -34,7 +35,10 @@ private:
     QOpenGLBuffer vbo;
     int size;//控制glDrawArrays点数量自动更新
 
-    GLfloat translate, xRot, yRot, zRot;//视觉转换
+    QVector3D cameraPos, cameraFront, cameraUp;
+
+    QMatrix4x4 model;
+
     GLenum mode;
 
     bool Add_tex;

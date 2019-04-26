@@ -302,7 +302,7 @@ vector<GLfloat> ProcessPicture::PointList(vector<Point> points)
 
     //---对control_point进行变形操作 弯曲
 
-    /*
+
 
     for(vector<Point3f>::iterator i = control_point.begin(); i != control_point.end(); i++)
     {
@@ -311,7 +311,7 @@ vector<GLfloat> ProcessPicture::PointList(vector<Point> points)
             i->z = -static_cast<float>(pow(i->y, 1.5) * 0.5);
         }
     }
-    */
+
     //------------------------
 
 

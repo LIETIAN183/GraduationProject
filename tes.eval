@@ -1,7 +1,12 @@
 #version 400 core
 layout (quads, equal_spacing, cw) in;
 in vec2 tes_texCoord[];
+
 out vec2 texCoord;
+out vec3 Normal;
+out vec3 FragPos;
+
+uniform mat4 inverse;
 
 vec4 quadratic_bezier(vec4 A, vec4 B, vec4 C, float t) {
   vec4 D = mix(A, B, t);
@@ -38,13 +43,26 @@ vec4 evaluate_patch2(vec2 at) {
   return cubic_bezier(P[0], P[1], P[2], P[3], at.x);
 }
 
+const float epsilon = 0.001;
+
 void main(void) {
-  vec4 p1 = evaluate_patch(gl_TessCoord.xy);
-  gl_Position = p1;
+    vec4 p1 = evaluate_patch(gl_TessCoord.xy);
+    gl_Position = p1;
 
-  vec4 p2 = evaluate_patch2(gl_TessCoord.xy);
-  texCoord = vec2(p2.x,p2.y);
+    //normal vector 法向量
+    vec4 p2 = evaluate_patch(gl_TessCoord.xy + vec2(0.0, epsilon));
+    vec4 p3 = evaluate_patch(gl_TessCoord.xy + vec2(epsilon, 0.0));
+    vec3 v1 = normalize(p2.xyz - p1.xyz);
+    vec3 v2 = normalize(p3.xyz - p1.xyz);
+    Normal = cross(v1, v2);
 
+
+    //纹理坐标
+    vec4 p4 = evaluate_patch2(gl_TessCoord.xy);
+    texCoord = vec2(p4.x,p4.y);
+
+    //FragPos
+    FragPos = vec3(inverse * gl_Position);
 }
 
 

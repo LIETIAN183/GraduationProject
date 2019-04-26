@@ -72,7 +72,6 @@ void MainWindow::flatModel()
     */
     QImage texture = this->pp->getOriginPic();
     this->ui->openGLWidget->Draw(tmp, tex, texture);
-
     //this->model->SaveBoundary(temp);
 
 

@@ -16,3 +16,4 @@
 - [ ] 编写图像拍摄要求 提示
 - [ ] FindBoundary提升精度
 - [ ] Qgraphicsview内图片随缩放变化大小
+- [ ] QopenglWidget鼠标移动

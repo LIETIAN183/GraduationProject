@@ -9,10 +9,18 @@ MyOpenGLWidget::MyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     setFocusPolicy(Qt::StrongFocus);
     this->size = 0;
-    translate = -6.0;
-    xRot = zRot = yRot = 0.0;
     mode = GL_FILL;
     this->Add_tex = false;
+
+    cameraPos = QVector3D(0.0f, 0.0f, 3.0f);
+    cameraFront = QVector3D(0.0f, 0.0f, -1.0f);
+    cameraUp = QVector3D(0.0f, 1.0f,  0.0f);
+
+    //view.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    //view.lookAt(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
+    //不可以在此处计算projection举证，因为此时窗口的width和height不是最终结果
+    //view.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
 }
 
 void MyOpenGLWidget::initializeGL()
@@ -113,7 +121,10 @@ void MyOpenGLWidget::initializeGL()
     */
 
 
+
     //线框模式
+    glEnable(GL_DEPTH_TEST);
+
     glEnable(GL_DEPTH_TEST);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
@@ -135,13 +146,23 @@ void MyOpenGLWidget::paintGL()
     program.bind();
     {
         vao.bind();
-        QMatrix4x4 matrix;
-        matrix.perspective(45.0f, static_cast<GLfloat>(width())  / static_cast<GLfloat>(height()), 0.1f, 100.0f);
-        matrix.translate(0, 0, translate);
-        matrix.rotate(xRot, 1.0, 0.0, 0.0);
-        matrix.rotate(yRot, 0.0, 1.0, 0.0);
-        matrix.rotate(zRot, 0.0, 0.0, 1.0);
-        program.setUniformValue("matrix", matrix);
+
+        QMatrix4x4 projection;//在此处计算projection因为此时width和height才能返回正确值
+        projection.perspective(45.0f, static_cast<float>(width()) / static_cast<float>(height()), 0.1f, 100.0f);
+
+        QMatrix4x4 view;
+        view.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+        //绑定矩阵
+        program.setUniformValue("projection", projection);
+        program.setUniformValue("view", view);
+        program.setUniformValue("model", model);
+
+        //设置光照
+        program.setUniformValue("lightColor", QVector3D(1.0f, 1.0f, 1.0f));
+        program.setUniformValue("inverse", projection.inverted());
+        program.setUniformValue("frag_view", view);
+        program.setUniformValue("lightPos", QVector3D(1.2f, 1.0f, 2.0f));
 
         glPolygonMode(GL_FRONT_AND_BACK, mode);
         if(Add_tex)
@@ -176,7 +197,6 @@ void MyOpenGLWidget::Draw(vector<GLfloat> x, vector<GLfloat> tex, QImage texture
 
     vbo.write(static_cast<int>(x.size()*sizeof(GLfloat)), &tex[0], static_cast<int>(tex.size()*sizeof(GLfloat)));
 
-    //GLuint vTexCoord = program.attributeLocation("vTexCoord");
     program.setAttributeBuffer(1, GL_FLOAT, static_cast<int>(x.size()*sizeof(GLfloat)), 2, 0);
     program.enableAttributeArray(1);
     program.setUniformValue("tex", 0);
@@ -185,44 +205,81 @@ void MyOpenGLWidget::Draw(vector<GLfloat> x, vector<GLfloat> tex, QImage texture
     vbo.release();
     program.release();
 
-    translate = -6.0;
-    xRot = zRot = yRot = 0.0;
+    //重置view和model矩阵
 
+    //不可删除，否则图片不刷新
     update();
-    cout << "READ" << endl;
-
+    //消除刷新后的颜色异常
+    glFlush();
 
 }
 
 void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
-    switch (event->key())
+    if(event->modifiers() == Qt::ControlModifier)
     {
-    case Qt::Key_Up:
-        xRot += 10;
-        break;
-    case Qt::Key_Left:
-        yRot += 10;
-        break;
-    case Qt::Key_Right:
-        zRot += 10;
-        break;
-    case Qt::Key_Down:
-        translate -= 1;
-        break;
-    case Qt::Key_Space:
-        translate += 1;
-        break;
-    case Qt::Key_R:
-        translate = -6.0;
-        xRot = zRot = yRot = 0.0;
-        break;
-    case Qt::Key_M:
-        mode = (mode == GL_LINE ? GL_FILL : GL_LINE);
-        break;
-    default:
-        break;
+        switch (event->key())
+        {
+        case Qt::Key_X:
+            model.rotate(-10.0f, 1.0f, 0.0f, 0.0f);
+            break;
+        case Qt::Key_Y:
+            model.rotate(-10.0f, 0.0f, 1.0f, 0.0f);
+            break;
+        case Qt::Key_Z:
+            model.rotate(-10.0f, 0.0f, 0.0f, 1.0f);
+            break;
+        default:
+            break;
+        }
+
     }
+    else//未按下Control键
+    {
+        GLfloat cameraSpeed = 0.1f;
+        switch (event->key())
+        {
+        case Qt::Key_X:
+            model.rotate(10.0f, 1.0f, 0.0f, 0.0f);
+            break;
+        case Qt::Key_Y:
+            model.rotate(10.0f, 0.0f, 1.0f, 0.0f);
+            break;
+        case Qt::Key_Z:
+            model.rotate(10.0f, 0.0f, 0.0f, 1.0f);
+            break;
+        case Qt::Key_R://重置
+            cameraPos = QVector3D(0.0f, 0.0f, 3.0f);
+            cameraFront = QVector3D(0.0f, 0.0f, -1.0f);
+            cameraUp = QVector3D(0.0f, 1.0f,  0.0f);
+            model = QMatrix4x4();
+            break;
+        case Qt::Key_P://线框模式
+            mode = (mode == GL_LINE ? GL_FILL : GL_LINE);
+            break;
+        case Qt::Key_W:
+            cameraPos -= cameraSpeed * cameraUp;
+            break;
+        case Qt::Key_S:
+            cameraPos += cameraSpeed * cameraUp;
+            break;
+        case Qt::Key_A:
+            cameraPos += QVector3D::crossProduct(cameraFront, cameraUp).normalized() * cameraSpeed;
+            break;
+        case Qt::Key_D:
+            cameraPos -= QVector3D::crossProduct(cameraFront, cameraUp).normalized() * cameraSpeed;
+            break;
+        case Qt::Key_N:
+            cameraPos += cameraSpeed * cameraFront;
+            break;
+        case Qt::Key_M:
+            cameraPos -= cameraSpeed * cameraFront;
+            break;
+        default:
+            break;
+        }
+    }
+
     update();
     QOpenGLWidget::keyPressEvent(event);
 }
