@@ -41,8 +41,12 @@ private:
 
     GLenum mode;
 
+    //判断是否添加纹理
     bool Add_tex;
     QOpenGLTexture *textures[2];
+
+    //判断是否开启光照
+    bool Light;
 };
 
 #endif // MYOPENGLWIDGET_H

@@ -11,16 +11,13 @@ MyOpenGLWidget::MyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     this->size = 0;
     mode = GL_FILL;
     this->Add_tex = false;
+    this->Light = false;
 
     cameraPos = QVector3D(0.0f, 0.0f, 3.0f);
     cameraFront = QVector3D(0.0f, 0.0f, -1.0f);
     cameraUp = QVector3D(0.0f, 1.0f,  0.0f);
 
-    //view.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    //view.lookAt(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
-    //不可以在此处计算projection举证，因为此时窗口的width和height不是最终结果
-    //view.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
+    //不可以在此处计算projection矩阵，因为此时窗口的width和height不是最终结果
 }
 
 void MyOpenGLWidget::initializeGL()
@@ -162,7 +159,11 @@ void MyOpenGLWidget::paintGL()
         program.setUniformValue("lightColor", QVector3D(1.0f, 1.0f, 1.0f));
         program.setUniformValue("inverse", projection.inverted());
         program.setUniformValue("frag_view", view);
-        program.setUniformValue("lightPos", QVector3D(1.2f, 1.0f, 2.0f));
+        program.setUniformValue("frag_model", model);
+        program.setUniformValue("lightPos", QVector3D(0.0f, 0.0f, 3.0f));
+        program.setUniformValue("viewPos", cameraPos);
+        program.setUniformValue("IsLight", this->Light);
+
 
         glPolygonMode(GL_FRONT_AND_BACK, mode);
         if(Add_tex)
@@ -257,16 +258,16 @@ void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
         case Qt::Key_P://线框模式
             mode = (mode == GL_LINE ? GL_FILL : GL_LINE);
             break;
-        case Qt::Key_W:
+        case Qt::Key_S:
             cameraPos -= cameraSpeed * cameraUp;
             break;
-        case Qt::Key_S:
+        case Qt::Key_W:
             cameraPos += cameraSpeed * cameraUp;
             break;
-        case Qt::Key_A:
+        case Qt::Key_D:
             cameraPos += QVector3D::crossProduct(cameraFront, cameraUp).normalized() * cameraSpeed;
             break;
-        case Qt::Key_D:
+        case Qt::Key_A:
             cameraPos -= QVector3D::crossProduct(cameraFront, cameraUp).normalized() * cameraSpeed;
             break;
         case Qt::Key_N:
@@ -274,6 +275,9 @@ void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
             break;
         case Qt::Key_M:
             cameraPos -= cameraSpeed * cameraFront;
+            break;
+        case Qt::Key_L:
+            Light = (Light == true ? false : true);
             break;
         default:
             break;
