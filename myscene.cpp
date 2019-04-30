@@ -30,6 +30,7 @@ void MyScene::SetScene(QPixmap pix, vector<Point> points, int width, int height)
 }
 void MyScene::ChangePosition(int index, double x, double y)
 {
+    qDebug() << "Scene:" << index;
     this->clearSelection();
     x += pix_width / 2;
     x /= pix_width;
@@ -56,7 +57,6 @@ void MyScene::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key_R)
     {
-        qDebug() << circles.size();
         for(list<MyCircleItem>::iterator i = circles.begin(); i != circles.end();)
         {
             if(i->IsSelected == true)
@@ -76,4 +76,90 @@ void MyScene::keyPressEvent(QKeyEvent *event)
             }
         }
     }
+}
+
+double calDis(MyCircleItem &a, MyCircleItem &b)
+{
+    return sqrt(pow(a.scenePos().x() - b.scenePos().x(), 2) + pow(a.scenePos().y() - b.scenePos().y(), 2));
+}
+void MyScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsScene::mousePressEvent(event);
+    bool temp = false;
+    for(list<MyCircleItem>::iterator i = circles.begin(); i != circles.end(); i++)
+    {
+        if(i->IsSelected == true)
+        {
+            temp = true;
+            break;
+        }
+    }
+    //没有控制点被选中时，添加控制点
+    if(!temp)
+    {
+        //x插入和x距离之和最近的两个元素之间
+        MyCircleItem *x = new MyCircleItem();
+        x->setBrush(QBrush(Qt::red));
+        x->setRect(-3, -3, 6, 6);
+        x->setPos(event->scenePos().x(), event->scenePos().y());
+        x->setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsMovable);
+        x->SetParent(this);
+        double dis = calDis(*circles.begin(), *x);
+        double distan = calDis(circles.back(), *x) + dis;
+        int insert_id = 0;
+        auto i = circles.begin();
+
+        //从第二个元素开始计算
+        //因为list迭代器不能+1-1，所以只能每次算出每个元素和x的距离dis，后一次在加上
+        for(i++; i != circles.end(); i++)
+        {
+            double t = dis + calDis(*i, *x);
+            if(t < distan)
+            {
+                distan = t;
+                insert_id = i->getId();
+            }
+            dis = calDis(*i, *x);
+        }
+        //插入元素
+        x->setId(insert_id);
+        int number = 0;
+        for(list<MyCircleItem>::iterator i = circles.begin(); i != circles.end(); number++)
+        {
+            if(number == insert_id)
+            {
+                i = circles.insert(i, *x); //这里很可能是深拷贝，所以如果把x加入scene中会出错
+            }
+            else
+            {
+                i++;
+            }
+        }
+        //更新Id
+        for(list<MyCircleItem>::iterator i = circles.begin(); i != circles.end(); i++)
+        {
+            i->setId(static_cast<int>(distance(circles.begin(), i)));
+        }
+
+        double xx = x->scenePos().x();
+        double y = x->scenePos().y();
+        xx += pix_width / 2;
+        xx /= pix_width;
+        xx *= (width - 1);
+        y += pix_height / 2;
+        y /= pix_height;
+        y *= (height - 1);
+        result.insert(result.begin() + insert_id, Point(static_cast<int>(xx), static_cast<int>(y)));
+
+        //加入新增元素到scene中
+        for(list<MyCircleItem>::iterator i = circles.begin(); i != circles.end(); i++)
+        {
+            if(i->getId() == insert_id)
+            {
+                this->addItem(&*i);
+            }
+        }
+        emit Modified();
+    }
+
 }

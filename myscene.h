@@ -22,6 +22,8 @@ public:
     vector<Point> returnResult();//返回控制点数据
     void ChangePic(QPixmap pix);//传递修改控制点后新的picture
     void keyPressEvent(QKeyEvent *keyEvent);
+    void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
+
 
 public slots:
     void ChangePosition(int index, double x, double y);//对控制点进行修改
