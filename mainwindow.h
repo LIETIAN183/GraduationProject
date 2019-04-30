@@ -22,7 +22,7 @@ public:
 public slots:
     void readFrontImage();
     void freshPic();
-    void flatModel();
+    void generateModel();
 private:
     Ui::MainWindow *ui;
     ProcessPicture *pp;

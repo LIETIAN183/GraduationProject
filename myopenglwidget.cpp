@@ -217,7 +217,7 @@ void MyOpenGLWidget::Draw(vector<GLfloat> x, vector<GLfloat> tex, QImage texture
 
 void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
-    if(event->modifiers() == Qt::ControlModifier)
+    if(event->modifiers() == Qt::ShiftModifier)
     {
         switch (event->key())
         {

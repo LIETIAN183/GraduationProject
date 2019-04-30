@@ -23,7 +23,7 @@ public:
     void ChangePic(QPixmap pix);//传递修改控制点后新的picture
     void keyPressEvent(QKeyEvent *keyEvent);
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
-
+    void RemoveAllItems();
 
 public slots:
     void ChangePosition(int index, double x, double y);//对控制点进行修改

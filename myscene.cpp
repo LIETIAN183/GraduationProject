@@ -8,6 +8,7 @@ MyScene::MyScene(QObject *parent) : QGraphicsScene(parent)
 
 void MyScene::SetScene(QPixmap pix, vector<Point> points, int width, int height)
 {
+    this->RemoveAllItems();
     result = points;
     this->pix_item = new MyPixItem(pix);
     this->addItem(pix_item);
@@ -162,4 +163,12 @@ void MyScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         emit Modified();
     }
 
+}
+
+void MyScene::RemoveAllItems()
+{
+    foreach(QGraphicsItem *item, items())
+    {
+        this->removeItem(item);
+    }
 }

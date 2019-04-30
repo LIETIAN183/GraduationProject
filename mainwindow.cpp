@@ -11,12 +11,16 @@ MainWindow::MainWindow(QWidget *parent) :
     this->ui->setupUi(this);
     setWindowState(Qt::WindowMaximized);
     this->pp = new ProcessPicture();
-    this->scene = new MyScene();
     this->model = new DataModel();
+    this->scene = new MyScene();
+    this->ui->graphicsView->setScene(scene);
     //点击按钮读取图片
     connect(ui->ac_Front_View, SIGNAL(triggered()), this, SLOT(readFrontImage()));
     connect(this->scene, SIGNAL(Modified()), this, SLOT(freshPic()));
-    connect(this->ui->ac_Flat_Model, SIGNAL(triggered()), this, SLOT(flatModel()));
+    connect(this->ui->ac_3D_Model, SIGNAL(triggered()), this, SLOT(generateModel()));
+    this->ui->ac_3D_Model->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
+    this->ui->ac_3D_Model->setEnabled(false);
+    this->ui->ac_Edit_Mode->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -41,8 +45,10 @@ void MainWindow::readFrontImage()
     QPixmap pix = QPixmap::fromImage(img.scaled(ui->graphicsView->size(), Qt::KeepAspectRatio));
     vector<Point> temp = this->pp->ReturnBoundary();
     this->scene->SetScene(pix, temp, pp->width(), pp->height());
-    this->ui->graphicsView->setScene(scene);
+
     freshPic();
+    this->ui->ac_3D_Model->setEnabled(true);
+    this->ui->ac_Edit_Mode->setEnabled(true);
 }
 
 void MainWindow::freshPic()
@@ -54,36 +60,13 @@ void MainWindow::freshPic()
     this->scene->ChangePic(pix);
 }
 
-void MainWindow::flatModel()
+void MainWindow::generateModel()
 {
     //存储进入模型
-
-    //----wait
-    //需要检测是否已经加载图片
-
     vector<Point> temp = this->scene->returnResult();
     vector<GLfloat> tmp = this->pp->PointList(temp);
     vector<GLfloat> tex = this->pp->ReturnTexCoord();
-    /*
-    for(vector<GLfloat>::iterator i = tex.begin(); i != tex.end(); i += 2)
-    {
-        cout << "[" << *i << "," << *(i + 1) << "]" << endl;
-    }
-    */
     QImage texture = this->pp->getOriginPic();
     this->ui->openGLWidget->Draw(tmp, tex, texture);
-    //this->model->SaveBoundary(temp);
-
-
-    /*
-    vector<GLfloat> tmp = model->ReturnBoundary();
-
-    if(tmp.empty())
-    {
-        QMessageBox::warning(this, "Warning", "请先读取图片");
-        return;
-    }
-
-    this->ui->openGLWidget->Draw(tmp);*/
-    //this->ui->graphicsView->hide();
+    this->ui->openGLWidget->setFocus();
 }
