@@ -1,5 +1,6 @@
 #include "myscene.h"
-
+#include <QKeyEvent>
+#include <QtDebug>
 MyScene::MyScene(QObject *parent) : QGraphicsScene(parent)
 {
 
@@ -12,9 +13,9 @@ void MyScene::SetScene(QPixmap pix, vector<Point> points, int width, int height)
     this->addItem(pix_item);
     this->width = width;
     this->height = height;
-    this->circles = vector<MyCircleItem>(points.size());
+    this->circles = list<MyCircleItem>(points.size());
     int m = 0;
-    vector<MyCircleItem>::iterator x = circles.begin();
+    list<MyCircleItem>::iterator x = circles.begin();
     for(vector<Point>::iterator i = points.begin(); i != points.end(); i++, x++, m++)
     {
         x->setBrush(QBrush(Qt::red));
@@ -51,3 +52,28 @@ void MyScene::ChangePic(QPixmap pix)
     this->pix_item->ChangePix(pix);
 }
 
+void MyScene::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_R)
+    {
+        qDebug() << circles.size();
+        for(list<MyCircleItem>::iterator i = circles.begin(); i != circles.end();)
+        {
+            if(i->IsSelected == true)
+            {
+                this->removeItem(&*i);
+                result.erase(result.begin() + i->getId());
+                //vector自定义类使用erase需要写拷贝构造函数，list则不需要
+                i = circles.erase(i);
+                emit Modified();
+            }
+            else
+            {
+                //删除元素后重排Circles Item元素的Id
+                //如果不更新Id，删除一个元素后的后续删除会出现问题
+                i->setId(static_cast<int>(distance(circles.begin(), i)));
+                i++;
+            }
+        }
+    }
+}

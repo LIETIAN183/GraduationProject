@@ -1,5 +1,6 @@
 #include "mycircleitem.h"
 #include <iostream>
+#include <QKeyEvent>
 #include "myscene.h"
 using namespace std;
 MyCircleItem::MyCircleItem(): QGraphicsEllipseItem ()
@@ -7,6 +8,7 @@ MyCircleItem::MyCircleItem(): QGraphicsEllipseItem ()
     setAcceptHoverEvents(true);
     //setAcceptedMouseButtons(Qt::LeftButton);
     setFlags(ItemIsSelectable | ItemIsMovable);
+    this->IsSelected = false;
 }
 void MyCircleItem::setId(int id)
 {
@@ -22,6 +24,7 @@ void MyCircleItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_UNUSED(event);
     emit Released(id, this->scenePos().x(), this->scenePos().y());
+    this->IsSelected = false;
 }
 
 void MyCircleItem::SetParent(QGraphicsScene *parent)
@@ -30,4 +33,13 @@ void MyCircleItem::SetParent(QGraphicsScene *parent)
     connect(this, SIGNAL(Released(int, double, double)), this->parent, SLOT(ChangePosition(int, double, double)));
 }
 
+void MyCircleItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_UNUSED(event);
+    this->IsSelected = true;
+}
 
+int MyCircleItem::getId()
+{
+    return this->id;
+}
