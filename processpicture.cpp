@@ -6,6 +6,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <QMessageBox>
 #include <QTime>
+#include <QtDebug>
 using namespace cv;
 using namespace std;
 
@@ -30,6 +31,7 @@ QImage ProcessPicture::ReturnImage()
 
     if(image.empty())
     {
+        //----wait
         image = imread("/Users/lietian/Desktop/IMG_2088.jpg", IMREAD_COLOR);
 
     }
@@ -37,12 +39,15 @@ QImage ProcessPicture::ReturnImage()
     if(image.type() == CV_8UC1) //灰度图
     {
         cvtColor(image, result, COLOR_GRAY2RGB);
+        qDebug() << 1;
     }
     else if (image.type() == CV_8UC3) //彩色图
     {
         cvtColor(image, result, COLOR_BGR2RGB);
+        qDebug() << 2;
     }
     cout << "Mat width:" << result.cols << ";height:" << result.rows << endl;
+    imshow("y", result);
     return QImage(static_cast<uchar *>(result.data), result.cols, result.rows, QImage::Format_RGB888);
 }
 
@@ -51,9 +56,10 @@ void ProcessPicture::FindBoundary()
 {
     //待提升精度--------------------------------------------------------
     image = back.clone();
+
     //---------------------处理得到二值图像--------
     cvtColor(image, gray, COLOR_BGR2GRAY);
-    GaussianBlur(image, image, Size(5, 5), 0, 0, BORDER_DEFAULT);
+
     //方法1
     //threshold(gray,gray,100,255,THRESH_BINARY | THRESH_OTSU);
 
@@ -72,6 +78,7 @@ void ProcessPicture::FindBoundary()
     //方法2
     //边缘扫描
     Canny(gray, gray, 10, 30);
+
     //imshow("gray", gray);
     //闭合边缘曲线
     Mat element = getStructuringElement(MORPH_RECT, Size(9, 9));
@@ -91,8 +98,8 @@ void ProcessPicture::FindBoundary()
     //去除轮廓外细小噪点
     medianBlur(gray, gray, 99);
     //方法3
-    //adaptiveThreshold(gray,gray,255,ADAPTIVE_THRESH_GAUSSIAN_C,THRESH_BINARY,3,1);
-    //medianBlur(gray,gray,3);
+    //adaptiveThreshold(gray, gray, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_OTSU | THRESH_BINARY, 3, 1);
+    //medianBlur(gray, gray, 3);
     //-----------------获得轮廓--------
     vector<vector<Point>> contours;//存储轮廓点
     vector<Vec4i> hierarchy;//存储不同轮廓间的信息
@@ -112,8 +119,6 @@ void ProcessPicture::FindBoundary()
     //赋值到boundary数组
     boundary.assign(approxPoint[0].begin(), approxPoint[0].end());
     //-------
-    //画边缘
-    //drawContours(image, approxPoint, -1, Scalar::all(255), 3);
 }
 
 bool ProcessPicture::ReturnFlag()
@@ -133,6 +138,7 @@ QImage ProcessPicture::drawBoundary(vector<Point> points)
     //画边缘
     vector<vector<Point>> temp = {points};
     drawContours(image, temp, -1, Scalar::all(255), 3);
+    imshow("x", image);
     return ReturnImage();
 }
 
@@ -160,7 +166,6 @@ vector<GLfloat> ProcessPicture::PointList(vector<Point> points)
     min_y = max_y = points[0].y;
     for(vector<Point>::iterator i = points.begin(); i != points.end(); i++)
     {
-        //cout << i->x << "," << i->y << endl;
         max_x = i->x > max_x ? i->x : max_x;
         min_x = i->x < min_x ? i->x : min_x;
         max_y = i->y > max_y ? i->y : max_y;

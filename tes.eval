@@ -8,6 +8,42 @@ out vec3 FragPos;
 
 uniform mat4 inverse;
 
+//----------------------------------------------------------------------------
+
+float B( int i, float u)
+{
+    int bc[4] = int[4](1,3,3,1);
+
+    return bc[i] * pow( u, i ) * pow( 1.0 - u, 3 - i );
+}
+
+//----------------------------------------------------------------------------
+
+vec4 Bezier(vec2 at)
+{
+    vec4  pos = vec4( 0.0 );
+
+    for ( int i = 0; i < 4; i++ ) {
+        for ( int j = 0; j < 4; j++ ) {
+            pos += B( i, at.x ) * B( j, at.y ) * gl_in[4*i+j].gl_Position;
+        }
+    }
+
+    return pos;
+}
+
+vec4 Bezier2(vec2 at)
+{
+    vec4  pos = vec4( 0.0 );
+
+    for ( int i = 0; i < 4; i++ ) {
+        for ( int j = 0; j < 4; j++ ) {
+            pos += B( i, at.x ) * B( j, at.y ) * vec4(tes_texCoord[4*i+j],0,0);
+        }
+    }
+    return pos;
+}
+
 vec4 quadratic_bezier(vec4 A, vec4 B, vec4 C, float t) {
   vec4 D = mix(A, B, t);
   vec4 E = mix(B, C, t);
@@ -46,12 +82,17 @@ vec4 evaluate_patch2(vec2 at) {
 const float epsilon = 0.001;
 
 void main(void) {
+    //使用Bezier函数时，法向量的计算存在问题
     vec4 p1 = evaluate_patch(gl_TessCoord.xy);
+    //vec4 p1 = Bezier(gl_TessCoord.xy);
     gl_Position = p1;
 
     //normal vector 法向量
     vec4 p2 = evaluate_patch(gl_TessCoord.xy + vec2(0.0, epsilon));
     vec4 p3 = evaluate_patch(gl_TessCoord.xy + vec2(epsilon, 0.0));
+    //vec4 p2 = Bezier(gl_TessCoord.xy + vec2(epsilon, 0.0));
+    //vec4 p3 = Bezier(gl_TessCoord.xy + vec2(0.0, epsilon));
+
     vec3 v1 = normalize(p2.xyz - p1.xyz);
     vec3 v2 = normalize(p3.xyz - p1.xyz);
     Normal = cross(v1, v2);
@@ -59,38 +100,9 @@ void main(void) {
 
     //纹理坐标
     vec4 p4 = evaluate_patch2(gl_TessCoord.xy);
+    //vec4 p4 = Bezier2(gl_TessCoord.xy);
     texCoord = vec2(p4.x,p4.y);
 
     //FragPos
     FragPos = vec3(inverse * gl_Position);
 }
-
-
-/*代码有问题，有空研究
-//----------------------------------------------------------------------------
-
-float
-B( int i, float u )
-{
-    const vec4 bc = vec4( 1, 3, 3, 1 );
-
-    return bc[i] * pow( u, i ) * pow( 1.0 - u, 3 - i );
-}
-
-//----------------------------------------------------------------------------
-
-void main()
-{
-    vec4  pos = vec4( 0.0 );
-
-    float  u = gl_TessCoord.x;
-    float  v = gl_TessCoord.y;
-
-    for ( int j = 0; j < 4; ++j ) {
-        for ( int i = 0; i < 4; ++i ) {
-            pos += B( i, u ) * B( j, v ) * gl_in[4*j+i].gl_Position;
-        }
-    }
-    gl_Position = pos;
-}
-*/

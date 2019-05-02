@@ -270,10 +270,10 @@ void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
         case Qt::Key_A:
             cameraPos -= QVector3D::crossProduct(cameraFront, cameraUp).normalized() * cameraSpeed;
             break;
-        case Qt::Key_N:
+        case Qt::Key_M:
             cameraPos += cameraSpeed * cameraFront;
             break;
-        case Qt::Key_M:
+        case Qt::Key_N:
             cameraPos -= cameraSpeed * cameraFront;
             break;
         case Qt::Key_L:

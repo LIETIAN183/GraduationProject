@@ -33,7 +33,7 @@ MainWindow::~MainWindow()
 void MainWindow::readFrontImage()
 {
     QString desktop_path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), desktop_path, tr("Images (*.png *.jpg)"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), desktop_path, tr("Images (*.png *.jpg *.bmp)"));
     if(filename.isEmpty())
     {
         QMessageBox::warning(this, "Warning", "READ PICTURE FAILING");
@@ -41,6 +41,7 @@ void MainWindow::readFrontImage()
     }
     pp->ReadPicture(filename);
     pp->FindBoundary();
+
     QImage img = pp->ReturnImage();
     QPixmap pix = QPixmap::fromImage(img.scaled(ui->graphicsView->size(), Qt::KeepAspectRatio));
     vector<Point> temp = this->pp->ReturnBoundary();
@@ -49,6 +50,7 @@ void MainWindow::readFrontImage()
     freshPic();
     this->ui->ac_3D_Model->setEnabled(true);
     this->ui->ac_Edit_Mode->setEnabled(true);
+
 }
 
 void MainWindow::freshPic()
