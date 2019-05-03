@@ -1,23 +1,25 @@
 #include "datamodel.h"
-
 DataModel::DataModel(QObject *parent) : QObject(parent)
 {
 
 }
 
-void DataModel::SaveBoundary(vector<Point> boundary)
+void DataModel::SaveBoundary(vector<Point3f> boundary)
 {
     this->boundary.assign(boundary.begin(), boundary.end());
 }
 
-vector<GLfloat> DataModel::ReturnBoundary()
+vector<Point3f> DataModel::ReturnBoundary()
 {
-    vector<GLfloat> temp;
-    for(vector<Point>::iterator i = boundary.begin(); i != boundary.end(); i++)
-    {
-        temp.push_back(i->x / 5000.0f );
-        temp.push_back(-i->y / 5000.0f);
-        temp.push_back(0.0f);
-    }
-    return temp;
+    return boundary;
+}
+
+void DataModel::SaveTex(vector<GLfloat> tex)
+{
+    this->texCoord = tex;
+}
+
+vector<GLfloat> DataModel::ReturnTex()
+{
+    return texCoord;
 }

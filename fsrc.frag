@@ -33,11 +33,11 @@ void main()
     // specular---Blinn-Phong模型
     float specularStrength = 0.5;
     vec3 viewDir = normalize(viewPos - FragPos);
-    //vec3 halfDir = normalize(lightDir + viewDir);
-    //float spec = pow(max(dot(halfDir, norm), 0.0), 32.0);
+    vec3 halfDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(halfDir, norm), 0.0), 32.0);
     //Phong模型
-    vec3 reflectDir = normalize(reflect(-lightDir, norm));
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
+    //vec3 reflectDir = normalize(reflect(-lightDir, norm));
+    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
     vec3 specular = specularStrength * spec * lightColor;
 
     //result

@@ -14,13 +14,16 @@ class DataModel : public QObject
     Q_OBJECT
 public:
     explicit DataModel(QObject *parent = nullptr);
-    void SaveBoundary(vector<Point> boundary);
-    vector<GLfloat> ReturnBoundary();
+    void SaveBoundary(vector<Point3f> boundary);
+    vector<Point3f> ReturnBoundary();
+    void SaveTex(vector<GLfloat> tex);
+    vector<GLfloat> ReturnTex();
 signals:
 
 public slots:
 private:
-    vector<Point> boundary;
+    vector<Point3f> boundary;
+    vector<GLfloat> texCoord;
 
 };
 

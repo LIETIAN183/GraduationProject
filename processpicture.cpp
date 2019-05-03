@@ -39,15 +39,12 @@ QImage ProcessPicture::ReturnImage()
     if(image.type() == CV_8UC1) //灰度图
     {
         cvtColor(image, result, COLOR_GRAY2RGB);
-        qDebug() << 1;
     }
     else if (image.type() == CV_8UC3) //彩色图
     {
         cvtColor(image, result, COLOR_BGR2RGB);
-        qDebug() << 2;
     }
     cout << "Mat width:" << result.cols << ";height:" << result.rows << endl;
-    imshow("y", result);
     return QImage(static_cast<uchar *>(result.data), result.cols, result.rows, QImage::Format_RGB888);
 }
 
@@ -138,7 +135,6 @@ QImage ProcessPicture::drawBoundary(vector<Point> points)
     //画边缘
     vector<vector<Point>> temp = {points};
     drawContours(image, temp, -1, Scalar::all(255), 3);
-    imshow("x", image);
     return ReturnImage();
 }
 
@@ -158,7 +154,7 @@ bool PointSort(const Point &a, const Point &b)//y小的在前，相同时x小的
     return a.y < b.y ? true : (a.y > b.y ? false : (a.x < b.x ? true : false));
 }
 
-vector<GLfloat> ProcessPicture::PointList(vector<Point> points)
+vector<Point3f> ProcessPicture::PointList(vector<Point> points)
 {
 
     int min_x, max_x, min_y, max_y;
@@ -235,17 +231,8 @@ vector<GLfloat> ProcessPicture::PointList(vector<Point> points)
             QMessageBox::warning(nullptr, "Error", "插值出错");
             cout << temp << endl;
         }
-        /*
-        cout << temp.size() << ";";
-        for(vector<Point>::iterator x = temp.begin(); x != temp.end(); x++)
-        {
-            cout << "[" << x->x << "," << x->y << "],";
-        }
-        cout << endl;
-        */
     }
 
-    cout << middle.size() << endl;
     vector<Point> middle2;//存储插入6个控制点后的控制点数组
     int a = 0, b = 0, delta = 0;
     for(vector<Point>::iterator i = middle.begin(); i != middle.end(); i += 2)
@@ -262,34 +249,19 @@ vector<GLfloat> ProcessPicture::PointList(vector<Point> points)
     }
 
 
-    //2维点转换3维点，此时获得所有控制点
-    //------------------------------------计算纹理坐标
+
+    //拷贝计算纹理坐标
     this->texCoord = middle2;
 
-    int t = (middle.size() / 2 - 1) % 3;
-
-    //补全纹理坐标控制点
-    if(t != 0)
-    {
-        //获取倒数7个点
-        vector<Point> temp;
-        for(vector<Point>::iterator i = texCoord.end() - 7; i != texCoord.end(); i++)
-        {
-            temp.push_back(*i);
-        }
-        //补全控制点
-        for(int j = 0; j < 3 - t; j++)
-        {
-            for(vector<Point>::iterator i = temp.begin(); i != temp.end(); i++)
-            {
-                texCoord.push_back(*i);
-            }
-        }
-    }
-    cout << "TexCoord " << texCoord.size() << endl;
-    //--------------------------------------
-    //此时save middle2数组可以用于计算纹理坐标
+    //2维点转换3维点，此时获得所有控制点
     vector<Point3f> control_point;
+    for(vector<Point>::iterator i = middle2.begin(); i != middle2.end(); i++)
+    {
+        control_point.push_back(Point3f(i->x, i->y, 0));
+    }
+
+    return  control_point;
+    /*
     for(vector<Point>::iterator i = middle2.begin(); i != middle2.end(); i++)
     {
         //移动树叶中央到原点
@@ -300,28 +272,38 @@ vector<GLfloat> ProcessPicture::PointList(vector<Point> points)
         i->y += (max_y - min_y) / 2;
 
         //等比例缩小
-        //i->x *= 1.75f / (max_x - min_x);
-        //i->y *= 1.75f / (max_x - min_x);
         control_point.push_back(Point3f(i->x * 1.75f / (max_y - min_y), i->y * 1.75f / (max_y - min_y), 0));
     }
+    */
 
-    //---对control_point进行变形操作 弯曲
+}
 
-
+vector<GLfloat> ProcessPicture::ProcessPoint(vector<Point3f> control_point)
+{
+    int min_x, max_x, min_y, max_y;
+    min_x = max_x = static_cast<int>(control_point[0].x);
+    min_y = max_y = static_cast<int>(control_point[0].y);
+    for(vector<Point3f>::iterator i = control_point.begin(); i != control_point.end(); i++)
+    {
+        max_x = static_cast<int>(i->x > max_x ? i->x : max_x);
+        min_x = static_cast<int>(i->x < min_x ? i->x : min_x);
+        max_y = static_cast<int>(i->y > max_y ? i->y : max_y);
+        min_y = static_cast<int>(i->y < min_y ? i->y : min_y);
+    }
 
     for(vector<Point3f>::iterator i = control_point.begin(); i != control_point.end(); i++)
     {
-        if(i->y > 0)
-        {
-            i->z = -static_cast<float>(pow(i->y, 1.5) * 0.5);
-        }
+        i->y = -i->y;
+        i->x -= min_x;
+        i->y += min_y;
+        i->x -= (max_x - min_x) / 2;
+        i->y += (max_y - min_y) / 2;
+        i->x = i->x * 1.75f / (max_y - min_y);
+        i->y = i->y * 1.75f / (max_y - min_y);
+        i->z = i->z * 1.75f / (max_y - min_y);
     }
 
-    //------------------------
-
-
-    //int t = (middle.size() / 2 - 1) % 3;
-
+    int t = (control_point.size() / 7 - 1) % 3;
     //补全控制点
     if(t != 0)
     {
@@ -380,6 +362,27 @@ vector<GLfloat> ProcessPicture::PointList(vector<Point> points)
 
 vector<GLfloat> ProcessPicture::ReturnTexCoord()
 {
+    int t = (texCoord.size() / 7 - 1) % 3;
+
+    //补全纹理坐标控制点
+    if(t != 0)
+    {
+        //获取倒数7个点
+        vector<Point> temp;
+        for(vector<Point>::iterator i = texCoord.end() - 7; i != texCoord.end(); i++)
+        {
+            temp.push_back(*i);
+        }
+        //补全控制点
+        for(int j = 0; j < 3 - t; j++)
+        {
+            for(vector<Point>::iterator i = temp.begin(); i != temp.end(); i++)
+            {
+                texCoord.push_back(*i);
+            }
+        }
+    }
+
     for(vector<Point>::iterator i = this->texCoord.begin(); i != this->texCoord.end(); i++)
     {
         i->y = image.rows - i->y;
@@ -409,7 +412,6 @@ vector<GLfloat> ProcessPicture::ReturnTexCoord()
         res.push_back(i->x * 1.0f / image.cols);
         res.push_back(i->y * 1.0f / image.rows);
     }
-
     return res;
 }
 

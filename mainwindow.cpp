@@ -11,13 +11,14 @@ MainWindow::MainWindow(QWidget *parent) :
     this->ui->setupUi(this);
     setWindowState(Qt::WindowMaximized);
     this->pp = new ProcessPicture();
-    this->model = new DataModel();
+    this->data = new DataModel();
     this->scene = new MyScene();
     this->ui->graphicsView->setScene(scene);
     //点击按钮读取图片
     connect(ui->ac_Front_View, SIGNAL(triggered()), this, SLOT(readFrontImage()));
     connect(this->scene, SIGNAL(Modified()), this, SLOT(freshPic()));
     connect(this->ui->ac_3D_Model, SIGNAL(triggered()), this, SLOT(generateModel()));
+    connect(this->ui->ac_Edit_Mode, SIGNAL(triggered()), this, SLOT(EditMode()));
     this->ui->ac_3D_Model->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
     this->ui->ac_3D_Model->setEnabled(false);
     this->ui->ac_Edit_Mode->setEnabled(false);
@@ -64,11 +65,67 @@ void MainWindow::freshPic()
 
 void MainWindow::generateModel()
 {
-    //存储进入模型
-    vector<Point> temp = this->scene->returnResult();
-    vector<GLfloat> tmp = this->pp->PointList(temp);
-    vector<GLfloat> tex = this->pp->ReturnTexCoord();
-    QImage texture = this->pp->getOriginPic();
-    this->ui->openGLWidget->Draw(tmp, tex, texture);
-    this->ui->openGLWidget->setFocus();
+    if(this->scene->Edit)
+    {
+        vector<Point3f> tmp = this->data->ReturnBoundary();
+        vector<GLfloat> t = this->pp->ProcessPoint(tmp);
+        vector<GLfloat> tex = this->data->ReturnTex();
+        QImage texture = this->pp->getOriginPic();
+        this->ui->openGLWidget->Draw(t, tex, texture);
+        this->ui->openGLWidget->setFocus();
+    }
+    else
+    {
+        vector<Point> temp = this->scene->returnResult();
+        vector<Point3f> tmp = this->pp->PointList(temp);
+        vector<GLfloat> t = this->pp->ProcessPoint(tmp);
+        vector<GLfloat> tex = this->pp->ReturnTexCoord();
+        QImage texture = this->pp->getOriginPic();
+        this->ui->openGLWidget->Draw(t, tex, texture);
+        this->ui->openGLWidget->setFocus();
+    }
+}
+
+void MainWindow::EditMode()
+{
+    if(!this->scene->Edit)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("开启Edit模式后不能再调整叶片轮廓.");
+        msgBox.setInformativeText("确定开启吗?");
+        msgBox.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+        msgBox.setDefaultButton(QMessageBox::No);
+        int ret = msgBox.exec();
+        switch (ret)
+        {
+        case QMessageBox::Yes:
+            this->scene->Edit = true;
+            break;
+        case QMessageBox::No:
+            return;
+        default:
+            break;
+        }
+
+        vector<Point> temp = this->scene->returnResult();
+        vector<Point3f> tmp = this->pp->PointList(temp);
+        this->data->SaveBoundary(tmp);
+        vector<GLfloat> tex = this->pp->ReturnTexCoord();
+        this->data->SaveTex(tex);
+
+        this->scene->setEditPoint(tmp);
+        this->scene->EditMode();
+        this->scene->data = this->data;
+    }
+    else if(this->scene->Edit)
+    {
+        //关闭Edit模式
+        //复原Qgraphicsview
+        this->scene->Edit = false;
+        qDebug() << "Edit Closed";
+        vector<Point> temp = this->scene->returnResult();
+        QImage tmp = this->pp->drawBoundary(temp);
+        QPixmap pix = QPixmap::fromImage(tmp.scaled(ui->graphicsView->size(), Qt::KeepAspectRatio));
+        this->scene->SetScene(pix, temp, pp->width(), pp->height());
+    }
 }

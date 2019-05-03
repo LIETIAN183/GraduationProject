@@ -23,12 +23,12 @@ public slots:
     void readFrontImage();
     void freshPic();
     void generateModel();
+    void EditMode();
 private:
     Ui::MainWindow *ui;
     ProcessPicture *pp;
-    //bool read_picture;
     MyScene *scene;
-    DataModel *model;
+    DataModel *data;
 };
 
 #endif // MAINWINDOW_H

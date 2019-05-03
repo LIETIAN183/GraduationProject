@@ -11,7 +11,4 @@ void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
     tcs_texCoord = vTexCoord;
-
-    //光照
-    //tcs_FragPos = vec3(view * model * vec4(aPos, 1.0));
 }
