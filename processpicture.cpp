@@ -261,24 +261,9 @@ vector<Point3f> ProcessPicture::PointList(vector<Point> points)
     }
 
     return  control_point;
-    /*
-    for(vector<Point>::iterator i = middle2.begin(); i != middle2.end(); i++)
-    {
-        //移动树叶中央到原点
-        i->y = -i->y;
-        i->x -= min_x;
-        i->y += min_y;
-        i->x -= (max_x - min_x) / 2;
-        i->y += (max_y - min_y) / 2;
-
-        //等比例缩小
-        control_point.push_back(Point3f(i->x * 1.75f / (max_y - min_y), i->y * 1.75f / (max_y - min_y), 0));
-    }
-    */
-
 }
 
-vector<GLfloat> ProcessPicture::ProcessPoint(vector<Point3f> control_point)
+vector<GLfloat> ProcessPicture::ProcessPoint(vector<Point3f> control_point, int index)
 {
     int min_x, max_x, min_y, max_y;
     min_x = max_x = static_cast<int>(control_point[0].x);
@@ -302,6 +287,26 @@ vector<GLfloat> ProcessPicture::ProcessPoint(vector<Point3f> control_point)
         i->y = i->y * 1.75f / (max_y - min_y);
         i->z = i->z * 1.75f / (max_y - min_y);
     }
+    //弯曲效果1
+    if(index == 1 || index == 3)
+    {
+        for(vector<Point3f>::iterator i = control_point.begin(); i != control_point.end(); i++)
+        {
+            if(i->y > 0)
+            {
+                i->z += -i->y * i->y / 2;
+            }
+        }
+    }
+    //弯曲效果2
+    if(index == 2 || index == 3)
+    {
+        for(vector<Point3f>::iterator i = control_point.begin(); i != control_point.end(); i++)
+        {
+            i->z += abs(i->x * 0.5f);
+        }
+    }
+    //---END----
 
     int t = (control_point.size() / 7 - 1) % 3;
     //补全控制点

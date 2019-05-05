@@ -109,6 +109,7 @@ void MyScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             x->setPos(event->scenePos().x(), event->scenePos().y());
             x->setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsMovable);
             x->SetParent(this);
+            x->isEdit = false;
             double dis = calDis(*circles.begin(), *x);
             double distan = calDis(circles.back(), *x) + dis;
             int insert_id = 0;

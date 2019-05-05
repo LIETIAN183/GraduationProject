@@ -24,11 +24,14 @@ public slots:
     void freshPic();
     void generateModel();
     void EditMode();
+    void SetDef();
 private:
     Ui::MainWindow *ui;
     ProcessPicture *pp;
     MyScene *scene;
     DataModel *data;
+
+    int index;
 };
 
 #endif // MAINWINDOW_H

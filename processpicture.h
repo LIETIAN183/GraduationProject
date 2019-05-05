@@ -21,7 +21,7 @@ public:
     vector<Point> ReturnBoundary();
     QImage drawBoundary(vector<Point> points);
     vector<Point3f> PointList(vector<Point> points);
-    vector<GLfloat> ProcessPoint(vector<Point3f> points);
+    vector<GLfloat> ProcessPoint(vector<Point3f> points, int index);
     int width();
     int height();
     vector<GLfloat> ReturnTexCoord();

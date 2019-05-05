@@ -19,9 +19,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this->scene, SIGNAL(Modified()), this, SLOT(freshPic()));
     connect(this->ui->ac_3D_Model, SIGNAL(triggered()), this, SLOT(generateModel()));
     connect(this->ui->ac_Edit_Mode, SIGNAL(triggered()), this, SLOT(EditMode()));
+    connect(this->ui->ac_Def1, SIGNAL(triggered()), this, SLOT(SetDef()));
+    connect(this->ui->ac_Def2, SIGNAL(triggered()), this, SLOT(SetDef()));
+    connect(this->ui->ac_Def3, SIGNAL(triggered()), this, SLOT(SetDef()));
     this->ui->ac_3D_Model->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
     this->ui->ac_3D_Model->setEnabled(false);
     this->ui->ac_Edit_Mode->setEnabled(false);
+
+    this->ui->ac_Def1->setEnabled(false);
+    this->ui->ac_Def2->setEnabled(false);
+    this->ui->ac_Def3->setEnabled(false);
+    this->index = 0;
 }
 
 MainWindow::~MainWindow()
@@ -51,6 +59,9 @@ void MainWindow::readFrontImage()
     freshPic();
     this->ui->ac_3D_Model->setEnabled(true);
     this->ui->ac_Edit_Mode->setEnabled(true);
+    this->ui->ac_Def1->setEnabled(true);
+    this->ui->ac_Def2->setEnabled(true);
+    this->ui->ac_Def3->setEnabled(true);
 
 }
 
@@ -68,7 +79,7 @@ void MainWindow::generateModel()
     if(this->scene->Edit)
     {
         vector<Point3f> tmp = this->data->ReturnBoundary();
-        vector<GLfloat> t = this->pp->ProcessPoint(tmp);
+        vector<GLfloat> t = this->pp->ProcessPoint(tmp, this->index);
         vector<GLfloat> tex = this->data->ReturnTex();
         QImage texture = this->pp->getOriginPic();
         this->ui->openGLWidget->Draw(t, tex, texture);
@@ -78,7 +89,7 @@ void MainWindow::generateModel()
     {
         vector<Point> temp = this->scene->returnResult();
         vector<Point3f> tmp = this->pp->PointList(temp);
-        vector<GLfloat> t = this->pp->ProcessPoint(tmp);
+        vector<GLfloat> t = this->pp->ProcessPoint(tmp, this->index);
         vector<GLfloat> tex = this->pp->ReturnTexCoord();
         QImage texture = this->pp->getOriginPic();
         this->ui->openGLWidget->Draw(t, tex, texture);
@@ -128,4 +139,22 @@ void MainWindow::EditMode()
         QPixmap pix = QPixmap::fromImage(tmp.scaled(ui->graphicsView->size(), Qt::KeepAspectRatio));
         this->scene->SetScene(pix, temp, pp->width(), pp->height());
     }
+}
+
+void MainWindow::SetDef()
+{
+    QString get = this->sender()->objectName();
+    if(get == "ac_Def1")
+    {
+        this->index = 1;
+    }
+    else if(get == "ac_Def2")
+    {
+        this->index = 2;
+    }
+    else if (get == "ac_Def3")
+    {
+        this->index = 3;
+    }
+    this->generateModel();
 }

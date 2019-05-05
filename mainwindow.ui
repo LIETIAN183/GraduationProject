@@ -55,6 +55,9 @@
      <string>Deformation</string>
     </property>
     <addaction name="ac_Edit_Mode"/>
+    <addaction name="ac_Def1"/>
+    <addaction name="ac_Def2"/>
+    <addaction name="ac_Def3"/>
    </widget>
    <addaction name="menuRead_Pixture"/>
    <addaction name="menuDeformation"/>
@@ -72,6 +75,21 @@
   <action name="ac_Edit_Mode">
    <property name="text">
     <string>Edit Mode</string>
+   </property>
+  </action>
+  <action name="ac_Def1">
+   <property name="text">
+    <string>Def1</string>
+   </property>
+  </action>
+  <action name="ac_Def2">
+   <property name="text">
+    <string>Def2</string>
+   </property>
+  </action>
+  <action name="ac_Def3">
+   <property name="text">
+    <string>Def3</string>
    </property>
   </action>
  </widget>

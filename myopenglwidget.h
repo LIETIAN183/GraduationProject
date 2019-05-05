@@ -30,7 +30,7 @@ signals:
 public slots:
 private:
     QOpenGLShaderProgram program;
-    GLuint vertex_array_object ;
+    //GLuint vertex_array_object;
     QOpenGLVertexArrayObject vao;
     QOpenGLBuffer vbo;
     int size;//控制glDrawArrays点数量自动更新

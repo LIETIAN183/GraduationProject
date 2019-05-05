@@ -121,8 +121,6 @@ void MyOpenGLWidget::initializeGL()
 
     //线框模式
     glEnable(GL_DEPTH_TEST);
-
-    glEnable(GL_DEPTH_TEST);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 

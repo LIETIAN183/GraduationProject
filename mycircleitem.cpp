@@ -12,6 +12,7 @@ MyCircleItem::MyCircleItem(): QGraphicsEllipseItem ()
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlags(ItemIsSelectable | ItemIsMovable);
     this->IsSelected = false;
+    this->isEdit = false;
 }
 
 MyCircleItem::MyCircleItem(const MyCircleItem &c)
@@ -24,6 +25,7 @@ MyCircleItem::MyCircleItem(const MyCircleItem &c)
     this->setRect(-3, -3, 6, 6);
     this->setPos(c.scenePos().x(), c.scenePos().y());
     this->id = c.id;
+    this->isEdit = c.isEdit;
     this->parent = c.parent;
     connect(this, SIGNAL(Released(int, double, double)), this->parent, SLOT(ChangePosition(int, double, double)));
     //connect(this, SIGNAL(SetPoint(int, Point3f)), this->parent, SLOT(ChangeControlPoint(int, Point3f )));
@@ -80,10 +82,12 @@ void MyCircleItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         dia.setLabelText(tr("z:"));
         dia.setInputMode(QInputDialog::IntInput);
         dia.setIntMaximum(10000);
+        dia.setIntValue(static_cast<int>(point.z));
         dia.setIntMinimum(-10000);
         if(dia.exec() == QInputDialog::Accepted)
         {
-            emit SetPoint(id, Point3f(point.x, point.y, dia.intValue()));
+            point.z = dia.intValue();
+            emit SetPoint(id, Point3f(point.x, point.y, point.z));
         }
     }
 }
