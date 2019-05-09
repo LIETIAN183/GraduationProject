@@ -42,6 +42,7 @@ void main()
 
     //result
     vec3 result = (ambient + diffuse + specular)* vec3(objectColor);
+
     if(IsLight){
         FragColor = vec4(result, 1.0);
     }else{

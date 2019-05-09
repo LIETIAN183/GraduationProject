@@ -127,6 +127,7 @@ void MainWindow::EditMode()
         this->scene->setEditPoint(tmp);
         this->scene->EditMode();
         this->scene->data = this->data;
+        this->ui->ac_Front_View->setEnabled(false);
     }
     else if(this->scene->Edit)
     {
@@ -138,6 +139,7 @@ void MainWindow::EditMode()
         QImage tmp = this->pp->drawBoundary(temp);
         QPixmap pix = QPixmap::fromImage(tmp.scaled(ui->graphicsView->size(), Qt::KeepAspectRatio));
         this->scene->SetScene(pix, temp, pp->width(), pp->height());
+        this->ui->ac_Front_View->setEnabled(true);
     }
 }
 

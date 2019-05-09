@@ -131,8 +131,6 @@ void MyOpenGLWidget::resizeGL(int width, int height)
 
 void MyOpenGLWidget::paintGL()
 {
-
-
     //设置背景颜色
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

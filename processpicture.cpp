@@ -200,10 +200,8 @@ vector<Point3f> ProcessPicture::PointList(vector<Point> points)
             middle.push_back(*(i + 1));
             continue;
         }
-
         vector<Point> temp;
         //判断该点在叶片的左端还是右端
-        //int mid = (max_x - min_x) / 2 + min_x;
         for(int j = min_x; j <= max_x; j++)
         {
             if(image.at<uchar>(Point(j, i->y)) == 255)
