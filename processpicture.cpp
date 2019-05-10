@@ -231,7 +231,9 @@ vector<Point3f> ProcessPicture::PointList(vector<Point> points)
         }
     }
 
-    vector<Point> middle2;//存储插入6个控制点后的控制点数组
+    vector<Point> middle2; //存储插入6个控制点后的控制点数组
+
+
     int a = 0, b = 0, delta = 0;
     for(vector<Point>::iterator i = middle.begin(); i != middle.end(); i += 2)
     {
@@ -245,8 +247,6 @@ vector<Point3f> ProcessPicture::PointList(vector<Point> points)
         }
         middle2.push_back(*(i + 1));
     }
-
-
 
     //拷贝计算纹理坐标
     this->texCoord = middle2;

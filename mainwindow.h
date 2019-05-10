@@ -25,6 +25,8 @@ public slots:
     void generateModel();
     void EditMode();
     void SetDef();
+    void Save();
+    void Load();
 private:
     Ui::MainWindow *ui;
     ProcessPicture *pp;

@@ -12,6 +12,7 @@ MyOpenGLWidget::MyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     mode = GL_FILL;
     this->Add_tex = false;
     this->Light = false;
+    this->Texture = true;
 
     cameraPos = QVector3D(0.0f, 0.0f, 3.0f);
     cameraFront = QVector3D(0.0f, 0.0f, -1.0f);
@@ -45,7 +46,7 @@ void MyOpenGLWidget::initializeGL()
     program.addShader(fshader);
     program.link();
     program.bind();
-    // 三角形的顶点数据
+    //
     GLfloat triangle[] =
     {
         0.0f, 0.75f, 0.0f, 0.25f, 0.750f, 0.0f,
@@ -159,7 +160,7 @@ void MyOpenGLWidget::paintGL()
         program.setUniformValue("lightPos", QVector3D(0.0f, 0.0f, 3.0f));
         program.setUniformValue("viewPos", cameraPos);
         program.setUniformValue("IsLight", this->Light);
-
+        program.setUniformValue("IsTexture", this->Texture);
 
         glPolygonMode(GL_FRONT_AND_BACK, mode);
         if(Add_tex)
@@ -182,6 +183,12 @@ void MyOpenGLWidget::paintGL()
 
 void MyOpenGLWidget::Draw(vector<GLfloat> x, vector<GLfloat> tex, QImage texture)
 {
+    //备份数据
+    this->control_points = x;
+    this->texCoord = tex;
+    this->texture = texture;
+
+    //绑定数据
     program.bind();
     vbo.bind();
     vao.bind();
@@ -203,12 +210,54 @@ void MyOpenGLWidget::Draw(vector<GLfloat> x, vector<GLfloat> tex, QImage texture
     program.release();
 
     //重置view和model矩阵
+    cameraPos = QVector3D(0.0f, 0.0f, 3.0f);
+    cameraFront = QVector3D(0.0f, 0.0f, -1.0f);
+    cameraUp = QVector3D(0.0f, 1.0f,  0.0f);
+    model = QMatrix4x4();
 
     //不可删除，否则图片不刷新
     update();
     //消除刷新后的颜色异常
     glFlush();
 
+}
+
+void MyOpenGLWidget::Clear()
+{
+    program.bind();
+    vbo.bind();
+    vao.bind();
+
+    GLfloat x[] =
+    {
+        0.0f, 0.75f, 0.0f, 0.25f, 0.750f, 0.0f,
+        0.5f, 0.75f, 0.0f, 0.75f, 0.75f, 0.0f,
+        0.0f, 0.5f, 0.0f, 0.25f, 0.5f, 0.0f,
+        0.5f, 0.5f, 0.0f, 0.75f, 0.5f, 0.0f,
+        0.0f, 0.25f, 0.0f, 0.25f, 0.25f, 0.0f,
+        0.5f, 0.25f, 0.3f, 0.75f, 0.25f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.25f, 0.0f, 0.2f,
+        0.5f, 0.0f, 0.0f, 0.75f, 0.0f, 0.0f,
+    };
+    vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    vbo.allocate(x, sizeof(x));
+    this->size = static_cast<int>(sizeof(x) / sizeof (GLfloat) / 3);
+    this->Add_tex = false;
+
+    vao.release();
+    vbo.release();
+    program.release();
+
+    //重置view和model矩阵
+    cameraPos = QVector3D(0.0f, 0.0f, 3.0f);
+    cameraFront = QVector3D(0.0f, 0.0f, -1.0f);
+    cameraUp = QVector3D(0.0f, 1.0f,  0.0f);
+    model = QMatrix4x4();
+
+    //不可删除，否则图片不刷新
+    update();
+    //消除刷新后的颜色异常
+    glFlush();
 }
 
 void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
@@ -274,6 +323,9 @@ void MyOpenGLWidget::keyPressEvent(QKeyEvent *event)
             break;
         case Qt::Key_L:
             Light = (Light == true ? false : true);
+            break;
+        case Qt::Key_T:
+            Texture = (Texture == true ? false : true);
             break;
         default:
             break;

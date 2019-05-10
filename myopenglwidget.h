@@ -18,7 +18,12 @@ public:
     explicit MyOpenGLWidget(QWidget *parent = nullptr);
     void Draw(vector<GLfloat> x, vector<GLfloat> tex, QImage texture);
     void keyPressEvent(QKeyEvent *event);
+    void Clear();
 
+    //备份数据
+    vector<GLfloat> control_points;
+    vector<GLfloat> texCoord;
+    QImage texture;
 
 protected:
     void initializeGL();
@@ -47,6 +52,9 @@ private:
 
     //判断是否开启光照
     bool Light;
+    bool Texture;
+
+
 };
 
 #endif // MYOPENGLWIDGET_H

@@ -13,6 +13,7 @@ uniform mat4 frag_model;
 uniform sampler2D tex;
 uniform vec3 lightColor;
 uniform bool IsLight;
+uniform bool IsTexture;
 void main()
 {
     //objectColor
@@ -40,6 +41,10 @@ void main()
     //float spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
     vec3 specular = specularStrength * spec * lightColor;
 
+    if(!IsTexture)
+    {
+        objectColor = vec4(1.0,1.0,1.0,0.0);
+    }
     //result
     vec3 result = (ambient + diffuse + specular)* vec3(objectColor);
 

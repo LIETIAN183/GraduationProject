@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this->ui->ac_Def1, SIGNAL(triggered()), this, SLOT(SetDef()));
     connect(this->ui->ac_Def2, SIGNAL(triggered()), this, SLOT(SetDef()));
     connect(this->ui->ac_Def3, SIGNAL(triggered()), this, SLOT(SetDef()));
+    connect(this->ui->ac_Save, SIGNAL(triggered()), this, SLOT(Save()));
+    connect(this->ui->ac_Load, SIGNAL(triggered()), this, SLOT(Load()));
     this->ui->ac_3D_Model->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
     this->ui->ac_3D_Model->setEnabled(false);
     this->ui->ac_Edit_Mode->setEnabled(false);
@@ -30,6 +32,10 @@ MainWindow::MainWindow(QWidget *parent) :
     this->ui->ac_Def2->setEnabled(false);
     this->ui->ac_Def3->setEnabled(false);
     this->index = 0;
+    this->ui->ac_Save->setEnabled(false);
+    QDir tempDir;
+    tempDir.mkdir("Data");
+    tempDir.mkdir("Image");
 }
 
 MainWindow::~MainWindow()
@@ -41,6 +47,7 @@ MainWindow::~MainWindow()
 //读取主视图
 void MainWindow::readFrontImage()
 {
+
     QString desktop_path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), desktop_path, tr("Images (*.png *.jpg *.bmp)"));
     if(filename.isEmpty())
@@ -48,6 +55,8 @@ void MainWindow::readFrontImage()
         QMessageBox::warning(this, "Warning", "READ PICTURE FAILING");
         return;
     }
+    this->ui->graphicsView->show();
+    this->ui->openGLWidget->Clear();
     pp->ReadPicture(filename);
     pp->FindBoundary();
 
@@ -62,6 +71,7 @@ void MainWindow::readFrontImage()
     this->ui->ac_Def1->setEnabled(true);
     this->ui->ac_Def2->setEnabled(true);
     this->ui->ac_Def3->setEnabled(true);
+    this->ui->ac_Save->setEnabled(false);
 
 }
 
@@ -95,6 +105,7 @@ void MainWindow::generateModel()
         this->ui->openGLWidget->Draw(t, tex, texture);
         this->ui->openGLWidget->setFocus();
     }
+    this->ui->ac_Save->setEnabled(true);
 }
 
 void MainWindow::EditMode()
@@ -159,4 +170,88 @@ void MainWindow::SetDef()
         this->index = 3;
     }
     this->generateModel();
+}
+
+void MainWindow::Save()
+{
+    //读取模型名称，检查有无重复
+
+    //存储数据
+    QString path = "Data/";
+    path.append("out.obj");
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        return;
+    }
+    QTextStream out(&file);
+    out << "# " << "out.obj" << " made By ChuyiFan\n";
+    for(auto i = this->ui->openGLWidget->control_points.begin(); i != this->ui->openGLWidget->control_points.end(); i += 3)
+    {
+        out << "v " << *i << " " << *(i + 1) << " " << *(i + 2) << "\n";
+    }
+
+    for(auto i = this->ui->openGLWidget->texCoord.begin(); i != this->ui->openGLWidget->texCoord.end(); i += 3)
+    {
+        out << "vt " << *i << " " << *(i + 1) << " " << *(i + 2) << "\n";
+    }
+    out << "usemtl " << "out.png\n";
+
+    //存储图片
+    QString pic_path = "Image/";
+    pic_path.append("out.png");
+    this->ui->openGLWidget->texture.save(pic_path, "PNG");
+}
+
+void MainWindow::Load()
+{
+    vector<GLfloat> control_points;
+    vector<GLfloat> tex;
+    QImage texture;
+
+    this->scene->RemoveAllItems();
+    this->ui->graphicsView->hide();
+
+    QString path = "Data/";
+    path.append("out.obj");
+
+    QString pic_path = "Image/";
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        return;
+    }
+
+    QTextStream in(&file);
+    while (!in.atEnd())
+    {
+        QString line = in.readLine();
+        QStringList list = line.split(" ");
+        if(list.at(0) == "#")
+        {
+            continue;
+        }
+        else if (list.at(0) == "v")
+        {
+            for(int i = 1; i < list.size(); i++)
+            {
+                control_points.push_back(list.at(i).toFloat());
+            }
+        }
+        else if (list.at(0) == "vt")
+        {
+            for(int i = 1; i < list.size(); i++)
+            {
+                tex.push_back(list.at(i).toFloat());
+            }
+        }
+        else if(list.at(0) == "usemtl")
+        {
+            pic_path.append(list.at(1));
+            texture.load(pic_path);
+        }
+    }
+    this->ui->openGLWidget->Draw(control_points, tex, texture);
+    this->ui->openGLWidget->setFocus();
 }
