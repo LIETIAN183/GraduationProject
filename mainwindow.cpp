@@ -4,6 +4,7 @@
 #include <QStandardPaths>
 #include <QMessageBox>
 #include <vector>
+#include <QInputDialog>
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -24,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this->ui->ac_Def3, SIGNAL(triggered()), this, SLOT(SetDef()));
     connect(this->ui->ac_Save, SIGNAL(triggered()), this, SLOT(Save()));
     connect(this->ui->ac_Load, SIGNAL(triggered()), this, SLOT(Load()));
+    connect(this->ui->ac_Close_Project, SIGNAL(triggered()), this, SLOT(CloseProject()));
     this->ui->ac_3D_Model->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
     this->ui->ac_3D_Model->setEnabled(false);
     this->ui->ac_Edit_Mode->setEnabled(false);
@@ -174,18 +176,51 @@ void MainWindow::SetDef()
 
 void MainWindow::Save()
 {
-    //读取模型名称，检查有无重复
-
+    //读取模型名称
+    QInputDialog dia(nullptr);
+    QString name;
+    dia.setWindowTitle(tr("存储模型"));
+    dia.setLabelText(tr("名字:"));
+    dia.setInputMode(QInputDialog::TextInput);
+    if(dia.exec() == QInputDialog::Accepted)
+    {
+        name = dia.textValue();
+    }
+    else
+    {
+        return;
+    }
     //存储数据
     QString path = "Data/";
-    path.append("out.obj");
+    path.append(name);
+    path.append(".obj");
+
+    QFileInfo fileInfo(path);
+    //检查名字是否重复
+    if(fileInfo.isFile())
+    {
+        QMessageBox msgBox;
+        msgBox.setText("已存在相同名字的模型");
+        msgBox.setInformativeText("是否继续保存?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+        int ret = msgBox.exec();
+        switch (ret)
+        {
+        case QMessageBox::Save:
+            break;
+        case QMessageBox::Cancel:
+            return;
+        }
+    }
+
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         return;
     }
     QTextStream out(&file);
-    out << "# " << "out.obj" << " made By ChuyiFan\n";
+    out << "# " << name << ".obj" << " made By ChuyiFan\n";
     for(auto i = this->ui->openGLWidget->control_points.begin(); i != this->ui->openGLWidget->control_points.end(); i += 3)
     {
         out << "v " << *i << " " << *(i + 1) << " " << *(i + 2) << "\n";
@@ -195,16 +230,42 @@ void MainWindow::Save()
     {
         out << "vt " << *i << " " << *(i + 1) << " " << *(i + 2) << "\n";
     }
-    out << "usemtl " << "out.png\n";
+    out << "usemtl " << name << ".png\n";
 
     //存储图片
     QString pic_path = "Image/";
-    pic_path.append("out.png");
+    pic_path.append(name);
+    pic_path.append(".png");
     this->ui->openGLWidget->texture.save(pic_path, "PNG");
+
+    QMessageBox msgBox;
+    msgBox.setText("保存成功。");
+    msgBox.exec();
 }
 
 void MainWindow::Load()
 {
+    //获取所有文件名字
+    QDir dir("Data/");
+    QStringList nameFilters;
+    nameFilters << "*.obj";
+    QStringList items;
+    items << "";
+    items.append(dir.entryList(nameFilters, QDir::Files | QDir::Readable, QDir::Name));
+    items.replaceInStrings(".obj", "");
+
+    QInputDialog dialog;
+    QString name;
+    QString item = dialog.getItem(this, "加载模型", "请选择一个模型", items, 0, false);
+    if(item == "")
+    {
+        return;
+    }
+    else
+    {
+        name = item;
+    }
+
     vector<GLfloat> control_points;
     vector<GLfloat> tex;
     QImage texture;
@@ -213,7 +274,8 @@ void MainWindow::Load()
     this->ui->graphicsView->hide();
 
     QString path = "Data/";
-    path.append("out.obj");
+    path.append(name);
+    path.append(".obj");
 
     QString pic_path = "Image/";
 
@@ -254,4 +316,18 @@ void MainWindow::Load()
     }
     this->ui->openGLWidget->Draw(control_points, tex, texture);
     this->ui->openGLWidget->setFocus();
+
+    this->ui->ac_Edit_Mode->setEnabled(false);
+    this->ui->ac_Def1->setEnabled(false);
+    this->ui->ac_Def2->setEnabled(false);
+    this->ui->ac_Def3->setEnabled(false);
+    this->ui->ac_3D_Model->setEnabled(false);
+
+}
+
+void MainWindow::CloseProject()
+{
+    this->scene->RemoveAllItems();
+    this->ui->graphicsView->show();
+    this->ui->openGLWidget->Clear();
 }

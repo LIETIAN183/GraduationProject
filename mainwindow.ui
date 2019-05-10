@@ -66,6 +66,8 @@
     </property>
     <addaction name="ac_Load"/>
     <addaction name="ac_Save"/>
+    <addaction name="separator"/>
+    <addaction name="ac_Close_Project"/>
    </widget>
    <addaction name="menuRead_Pixture"/>
    <addaction name="menuDeformation"/>
@@ -109,6 +111,11 @@
   <action name="ac_Save">
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="ac_Close_Project">
+   <property name="text">
+    <string>Close Project</string>
    </property>
   </action>
  </widget>

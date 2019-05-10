@@ -27,6 +27,7 @@ public slots:
     void SetDef();
     void Save();
     void Load();
+    void CloseProject();
 private:
     Ui::MainWindow *ui;
     ProcessPicture *pp;

@@ -35,7 +35,8 @@ SOURCES += \
     myscene.cpp \
     mypixitem.cpp \
     mycircleitem.cpp \
-    datamodel.cpp
+    datamodel.cpp \
+    point3fdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -44,10 +45,12 @@ HEADERS += \
     myscene.h \
     mypixitem.h \
     mycircleitem.h \
-    datamodel.h
+    datamodel.h \
+    point3fdialog.h
 
 FORMS += \
         mainwindow.ui \
+    point3fdialog.ui
 
 CONFIG += mobility
 MOBILITY = 

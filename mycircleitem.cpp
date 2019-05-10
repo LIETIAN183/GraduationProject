@@ -5,6 +5,7 @@
 #include "myscene.h"
 #include <QInputDialog>
 #include <QDir>
+#include "point3fdialog.h"
 using namespace std;
 MyCircleItem::MyCircleItem(): QGraphicsEllipseItem ()
 {
@@ -77,17 +78,16 @@ void MyCircleItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
     else
     {
-        QInputDialog dia(nullptr);
-        dia.setWindowTitle(tr("调整控制点的深度值"));
-        dia.setLabelText(tr("z:"));
-        dia.setInputMode(QInputDialog::IntInput);
-        dia.setIntMaximum(10000);
-        dia.setIntValue(static_cast<int>(point.z));
-        dia.setIntMinimum(-10000);
-        if(dia.exec() == QInputDialog::Accepted)
+        Point3fDialog dialog;
+        dialog.SetNumber(1, static_cast<int>(point.x));
+        dialog.SetNumber(2, static_cast<int>(point.y));
+        dialog.SetNumber(3, static_cast<int>(point.z));
+        if(dialog.exec() == QDialog::Accepted)
         {
-            point.z = dia.intValue();
-            emit SetPoint(id, Point3f(point.x, point.y, point.z));
+            point.x = dialog.getNumber(1);
+            point.y = dialog.getNumber(2);
+            point.z = dialog.getNumber(3);
+            emit SetPoint(id, point);
         }
     }
 }
@@ -97,7 +97,7 @@ int MyCircleItem::getId()
     return this->id;
 }
 
-void MyCircleItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+void MyCircleItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
 {
     Q_UNUSED(event);
     if(this->isEdit)

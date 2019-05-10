@@ -9,7 +9,7 @@
 - [x] Phone光照
 - [x] 固定光源
 - [x] 添加几个弯曲特效
-- [ ] SaveLoad
+- [x] SaveLoad
 - [ ] 关闭项目
 - [x] OpenGL交互
 - [x] 纹理映射第一次显示全蓝？有问题
