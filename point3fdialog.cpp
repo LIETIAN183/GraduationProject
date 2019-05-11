@@ -11,6 +11,7 @@ Point3fDialog::Point3fDialog(QWidget *parent) :
     this->setFixedSize( this->width (), this->height ());
     this->setFocus();
     connect(this->ui->Btn_OK, SIGNAL(clicked()), this, SLOT(OK()));
+    connect(this->ui->Btn_Cancel, SIGNAL(clicked()), this, SLOT(Cancel()));
 }
 
 Point3fDialog::~Point3fDialog()
@@ -60,10 +61,10 @@ int Point3fDialog::getNumber(int i)
 
 void Point3fDialog::OK()
 {
-    emit accept();
+    QDialog::accept();
 }
 
 void Point3fDialog::Cancel()
 {
-    emit reject();
+    this->done(QDialog::Rejected);
 }

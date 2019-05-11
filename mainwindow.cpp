@@ -25,14 +25,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this->ui->ac_Def3, SIGNAL(triggered()), this, SLOT(SetDef()));
     connect(this->ui->ac_Save, SIGNAL(triggered()), this, SLOT(Save()));
     connect(this->ui->ac_Load, SIGNAL(triggered()), this, SLOT(Load()));
+    connect(this->ui->ac_Cancel, SIGNAL(triggered()), this, SLOT(SetDef()));
     connect(this->ui->ac_Close_Project, SIGNAL(triggered()), this, SLOT(CloseProject()));
     this->ui->ac_3D_Model->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
+    this->ui->ac_Save->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
     this->ui->ac_3D_Model->setEnabled(false);
     this->ui->ac_Edit_Mode->setEnabled(false);
 
     this->ui->ac_Def1->setEnabled(false);
     this->ui->ac_Def2->setEnabled(false);
     this->ui->ac_Def3->setEnabled(false);
+    this->ui->ac_Cancel->setEnabled(false);
     this->index = 0;
     this->ui->ac_Save->setEnabled(false);
     QDir tempDir;
@@ -162,14 +165,22 @@ void MainWindow::SetDef()
     if(get == "ac_Def1")
     {
         this->index = 1;
+        this->ui->ac_Cancel->setEnabled(true);
     }
     else if(get == "ac_Def2")
     {
         this->index = 2;
+        this->ui->ac_Cancel->setEnabled(true);
     }
     else if (get == "ac_Def3")
     {
         this->index = 3;
+        this->ui->ac_Cancel->setEnabled(true);
+    }
+    else if (get == "ac_Cancel")
+    {
+        this->index = 0;
+        this->ui->ac_Cancel->setEnabled(false);
     }
     this->generateModel();
 }
@@ -188,10 +199,11 @@ void MainWindow::Save()
     }
     else
     {
+        qDebug() << 100;
         return;
     }
     //存储数据
-    QString path = "Data/";
+    QString path = QCoreApplication::applicationDirPath() + "/Data/";
     path.append(name);
     path.append(".obj");
 
@@ -210,6 +222,7 @@ void MainWindow::Save()
         case QMessageBox::Save:
             break;
         case QMessageBox::Cancel:
+            qDebug() << 101;
             return;
         }
     }
@@ -217,6 +230,7 @@ void MainWindow::Save()
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
+        qDebug() << 102;
         return;
     }
     QTextStream out(&file);
@@ -226,14 +240,14 @@ void MainWindow::Save()
         out << "v " << *i << " " << *(i + 1) << " " << *(i + 2) << "\n";
     }
 
-    for(auto i = this->ui->openGLWidget->texCoord.begin(); i != this->ui->openGLWidget->texCoord.end(); i += 3)
+    for(auto i = this->ui->openGLWidget->texCoord.begin(); i != this->ui->openGLWidget->texCoord.end(); i += 2)
     {
-        out << "vt " << *i << " " << *(i + 1) << " " << *(i + 2) << "\n";
+        out << "vt " << *i << " " << *(i + 1)  << "\n";
     }
     out << "usemtl " << name << ".png\n";
 
     //存储图片
-    QString pic_path = "Image/";
+    QString pic_path = QCoreApplication::applicationDirPath() + "/Image/";
     pic_path.append(name);
     pic_path.append(".png");
     this->ui->openGLWidget->texture.save(pic_path, "PNG");
@@ -241,12 +255,14 @@ void MainWindow::Save()
     QMessageBox msgBox;
     msgBox.setText("保存成功。");
     msgBox.exec();
+
 }
 
 void MainWindow::Load()
 {
     //获取所有文件名字
-    QDir dir("Data/");
+    QString path = QCoreApplication::applicationDirPath() + "/Data/";
+    QDir dir(path);
     QStringList nameFilters;
     nameFilters << "*.obj";
     QStringList items;
@@ -273,11 +289,11 @@ void MainWindow::Load()
     this->scene->RemoveAllItems();
     this->ui->graphicsView->hide();
 
-    QString path = "Data/";
+
     path.append(name);
     path.append(".obj");
 
-    QString pic_path = "Image/";
+    QString pic_path = QCoreApplication::applicationDirPath() + "/Image/";
 
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -330,4 +346,14 @@ void MainWindow::CloseProject()
     this->scene->RemoveAllItems();
     this->ui->graphicsView->show();
     this->ui->openGLWidget->Clear();
+
+    this->ui->ac_3D_Model->setEnabled(false);
+    this->ui->ac_Edit_Mode->setEnabled(false);
+
+    this->ui->ac_Def1->setEnabled(false);
+    this->ui->ac_Def2->setEnabled(false);
+    this->ui->ac_Def3->setEnabled(false);
+    this->ui->ac_Cancel->setEnabled(false);
+    this->index = 0;
+    this->ui->ac_Save->setEnabled(false);
 }

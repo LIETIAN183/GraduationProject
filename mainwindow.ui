@@ -59,6 +59,7 @@
     <addaction name="ac_Def1"/>
     <addaction name="ac_Def2"/>
     <addaction name="ac_Def3"/>
+    <addaction name="ac_Cancel"/>
    </widget>
    <widget class="QMenu" name="menuLibrary">
     <property name="title">
@@ -116,6 +117,11 @@
   <action name="ac_Close_Project">
    <property name="text">
     <string>Close Project</string>
+   </property>
+  </action>
+  <action name="ac_Cancel">
+   <property name="text">
+    <string>Cancel</string>
    </property>
   </action>
  </widget>

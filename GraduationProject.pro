@@ -5,13 +5,14 @@
 #-------------------------------------------------
 
 QT       += core gui
+ICON = Icon.icns
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 QT_CONFIG -= no-pkg-config
 CONFIG += link_pkgconfig
 PKGCONFIG += opencv4
 
-TARGET = GraduationProject
+TARGET = 树叶建模系统
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
